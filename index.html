@@ -1,0 +1,1603 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taniku cpp28 - Penghitung HST & Panduan Pertanian</title>
+    
+    <!-- Preconnect for fast font & asset fetching -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Google Fonts Inter with font-display swap for fast render -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+        .tab-active { background-color: #ecfdf5; color: #065f46; font-weight: 700; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-white">
+
+    <div>
+        <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3 relative">
+                        <!-- Hamburger Button -->
+                        <button onclick="toggleMenu(event)" id="mainMenuBtn" aria-label="Buka Menu Utama" class="p-2 hover:bg-white/20 rounded-xl transition text-emerald-100 hover:text-white text-xl flex items-center justify-center border border-white/10 active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+
+                        <!-- App Icon & Title -->
+                        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-md flex items-center justify-center">
+                            <i class="fa-solid font-bold text-xl sm:text-2xl fa-seedling text-emerald-200"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-base sm:text-lg leading-tight">Taniku cpp28</h1>
+                            <p class="text-[10px] sm:text-xs text-emerald-100 hidden sm:block">Penghitung HST & Rekomendasi Nutrisi/Pestisida</p>
+                        </div>
+
+                        <!-- Dropdown Nav Menu -->
+                        <div id="dropdownMenu" class="hidden absolute top-14 left-0 w-64 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 transition-all duration-200">
+                            <div class="px-4 py-2 border-b border-slate-100">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Menu Utama</p>
+                            </div>
+                            <div class="p-1.5 space-y-1">
+                                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-3 text-emerald-800 bg-emerald-50 text-left cursor-pointer">
+                                    <i class="fa-solid fa-chart-line text-emerald-600 w-5"></i> Dashboard Kebun
+                                </button>
+                                <button onclick="switchTab('calculator')" id="nav-calculator" class="tab-btn w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-3 text-slate-700 hover:bg-slate-100 text-left cursor-pointer">
+                                    <i class="fa-solid fa-calculator text-emerald-600 w-5"></i> Penghitung HST & Lahan
+                                </button>
+                                <button onclick="switchTab('recommendations')" id="nav-recommendations" class="tab-btn w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-3 text-slate-700 hover:bg-slate-100 text-left cursor-pointer">
+                                    <i class="fa-solid fa-flask-vial text-emerald-600 w-5"></i> Katalog Nutrisi & Obat
+                                </button>
+                                <button onclick="switchTab('journal')" id="nav-journal" class="tab-btn w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-3 text-slate-700 hover:bg-slate-100 text-left cursor-pointer">
+                                    <i class="fa-solid fa-book-bookmark text-emerald-600 w-5"></i> Jurnal Perawatan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-emerald-500/30 px-2.5 py-1 rounded-full text-emerald-100 border border-emerald-400/30 font-medium" id="currentDateBadge">
+                            --/--/----
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Notification Toast Container -->
+        <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+        <!-- Custom Delete Confirmation Modal -->
+        <div id="customConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-opacity">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4 border border-slate-100">
+                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="text-center">
+                    <h3 class="text-base font-bold text-slate-800" id="confirmModalTitle">Konfirmasi Hapus</h3>
+                    <p class="text-xs text-slate-500 mt-1" id="confirmModalMessage">Apakah Anda yakin ingin menghapus data ini?</p>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button id="modalCancelBtn" onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer">Batal</button>
+                    <button id="modalConfirmBtn" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition shadow-sm cursor-pointer">Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="sec-dashboard" class="space-y-6">
+                <!-- Summary Stats Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase">Total Lahan Aktif</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="dashTotalCrops">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-wheat-awn"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase">Fase Vegetatif</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="dashVegetative">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase">Fase Generatif</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="dashGenerative">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-fan"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase">Mendekati Panen</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="dashHarvestReady">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Crops Grid -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">Daftar Tanaman & Lahan Terdaftar</h2>
+                            <p class="text-sm text-slate-500">Pantau perkembangan Hari Setelah Tanam (HST) dan jadwal perlakuan.</p>
+                        </div>
+                        <button onclick="switchTab('calculator')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 self-start sm:self-auto shadow-sm cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> Tambah Tanaman Baru
+                        </button>
+                    </div>
+
+                    <!-- Crop Cards Container -->
+                    <div id="cropsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyCropsState" class="hidden text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl">
+                        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                        <h3 class="font-semibold text-slate-700 text-base">Belum ada tanaman terdaftar</h3>
+                        <p class="text-slate-500 text-sm max-w-md mx-auto mt-1 mb-4">Tambahkan data lahan atau tanaman Anda untuk mulai menghitung HST dan rekomendasi pupuk & pestisida otomatis.</p>
+                        <button onclick="switchTab('calculator')" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition cursor-pointer">
+                            <i class="fa-solid fa-calculator"></i> Mulai Hitung HST
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: CALCULATOR HST & NEW CROP -->
+            <section id="sec-calculator" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Form Input -->
+                    <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="border-b border-slate-100 pb-4 mb-5">
+                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-calculator text-emerald-600"></i> Hitung HST & Daftarkan Lahan
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Isi tanggal tanam untuk menghitung HST secara otomatis.</p>
+                        </div>
+
+                        <form id="cropForm" onsubmit="handleSaveCrop(event)" class="space-y-4">
+                            <input type="hidden" id="editCropId">
+                            
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Lahan / Blok</label>
+                                <input type="text" id="inputPlotName" placeholder="Contoh: Lahan A, Kebun Timur, Blok 1" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jenis Tanaman</label>
+                                <select id="inputCropType" onchange="handleCropTypeChange()" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition cursor-pointer">
+                                    <option value="">Pilih Jenis</option>
+                                    <option value="Bawang Daun">Bawang Daun</option>
+                                    <option value="Kol">Kol / Kubis</option>
+                                    <option value="Cabai">Cabai</option>
+                                    <option value="Brokoli">Brokoli</option>
+                                    <option value="Kentang">Kentang</option>
+                                    <option value="Seledri">Seledri</option>
+                                    <option value="CUSTOM">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <!-- Input Manual Jenis Tanaman -->
+                            <div id="customCropContainer" class="hidden">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Tanaman (Input Manual)</label>
+                                <input type="text" id="inputCustomCropType" oninput="calculateLivePreview()" placeholder="Contoh: Terong, Porang, Buncis, Mentimun" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Tanggal Tanam</label>
+                                    <input type="date" id="inputPlantingDate" onchange="calculateLivePreview()" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jumlah Tanaman</label>
+                                    <input type="text" id="inputAreaNotes" placeholder="Contoh: 1.000 Pohon / 500 Rumpun" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                                </div>
+                            </div>
+
+                            <div class="pt-2 flex gap-3">
+                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Data Lahan
+                                </button>
+                                <button type="button" onclick="resetForm()" class="px-4 py-2.5 border border-slate-300 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition cursor-pointer">
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Live HST Preview & Phase Information -->
+                    <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="border-b border-slate-100 pb-4 mb-5">
+                                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Hasil Perhitungan HST Saat Ini
+                                </h2>
+                                <p class="text-xs text-slate-500 mt-1">Pratinjau perhitungan umur tanaman dan estimasi perkiraan panen.</p>
+                            </div>
+
+                            <div id="previewCard" class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-4">
+                                <div class="inline-block px-3 py-1 bg-emerald-200/60 text-emerald-800 rounded-full text-xs font-bold uppercase tracking-wider" id="prevCropType">
+                                    Pilih Tanaman & Tanggal
+                                </div>
+                                <div class="py-2">
+                                    <span class="text-6xl font-extrabold text-emerald-700 tracking-tight" id="prevHST">0</span>
+                                    <span class="text-lg font-bold text-emerald-900 ml-1">HST</span>
+                                    <p class="text-xs text-slate-600 mt-1">(Hari Setelah Tanam)</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4 bg-white/80 p-4 rounded-xl border border-emerald-100 text-left">
+                                    <div>
+                                        <p class="text-xs text-slate-500">Estimasi Tanggal Panen:</p>
+                                        <p class="text-sm font-bold text-slate-800" id="prevHarvestDate">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500">Fase Pertumbuhan Saat Ini:</p>
+                                        <p class="text-sm font-bold text-emerald-700" id="prevGrowthPhase">-</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1 text-left">
+                                    <div class="flex justify-between text-xs font-medium text-slate-600">
+                                        <span>Progres Menuju Panen</span>
+                                        <span id="prevProgressPercent">0%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                                        <div id="prevProgressBar" class="bg-emerald-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Growth Phase Standard Guide -->
+                        <div class="mt-6 pt-4 border-t border-slate-100">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Panduan Rentang Fase Tanaman Umum:</h4>
+                            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                <div class="p-2 bg-slate-50 rounded-lg border border-slate-200">
+                                    <span class="block font-bold text-slate-700">Awal Tanam</span>
+                                    <span class="text-slate-500">HST 1 - 15</span>
+                                </div>
+                                <div class="p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                    <span class="block font-bold text-blue-700">Vegetatif (Daun/Batang)</span>
+                                    <span class="text-blue-500">HST 16 - 35</span>
+                                </div>
+                                <div class="p-2 bg-amber-50 rounded-lg border border-amber-200">
+                                    <span class="block font-bold text-amber-700">Generatif (Bunga & Buah)</span>
+                                    <span class="text-amber-500">HST 36 - Harvest</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: RECOMMENDATIONS CATALOG -->
+            <section id="sec-recommendations" class="hidden space-y-6">
+                <!-- Filter Bar -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-vial-circle-check text-emerald-600"></i> Panduan Nutrisi & Perlindungan Tanaman
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Rekomendasi kebutuhan Pupuk, Pestisida, Kalsium, dan Perekat per HST.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div>
+                            <select id="filterRecCrop" onchange="renderRecommendations()" class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                <option value="Bawang Daun">Tanaman: Bawang Daun</option>
+                                <option value="Kol">Tanaman: Kol / Kubis</option>
+                                <option value="Cabai">Tanaman: Cabai</option>
+                                <option value="Brokoli">Tanaman: Brokoli</option>
+                                <option value="Kentang">Tanaman: Kentang</option>
+                                <option value="Seledri">Tanaman: Seledri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filterRecStage" onchange="renderRecommendations()" class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                <option value="ALL">Semua Fase HST</option>
+                                <option value="VEG_EARLY">Fase Awal / Semaian (HST 1-15)</option>
+                                <option value="VEG">Fase Vegetatif Aktif (HST 16-35)</option>
+                                <option value="GEN">Fase Bunga & Buah (HST 36-60)</option>
+                                <option value="MATURE">Fase Pengisian & Panen (HST > 60)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendation Cards List -->
+                <div id="recommendationsList" class="space-y-5">
+                    <!-- Dynamic Recommendation Cards Inserted Here -->
+                </div>
+            </section>
+
+            <!-- TAB 4: MAINTENANCE JOURNAL -->
+            <section id="sec-journal" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Add Activity Form & Integrated Dose Calculator -->
+                    <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Catat Perawatan Kebun
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Dokumentasikan aktivitas semprot, kocor, atau pemupukan.</p>
+                        </div>
+
+                        <form id="journalForm" onsubmit="handleSaveJournal(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Pilih Tanaman / Lahan</label>
+                                <select id="journalCropSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jenis Perlakuan</label>
+                                <select id="journalType" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                    <option value="Penyemprotan (Foliar)">Penyemprotan (Foliar / Semprot Daun)</option>
+                                    <option value="Pengecoran (Drenching)">Pengecoran (Drenching Akar)</option>
+                                    <option value="Pemupukan Tabur">Pemupukan Tabur (Basal)</option>
+                                    <option value="Penyiangan & Pruning">Penyiangan & Pruning Daun</option>
+                                    <option value="Panen Hasil">Panen Hasil / Petik</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Tanggal Kegiatan</label>
+                                <input type="date" id="journalDate" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Produk / Merk (Otomatis Deteksi Khasiat)</label>
+                                <input type="text" id="journalProductName" oninput="liveCheckProductInfo()" placeholder="Contoh: Antracol, Prevathon, Amistartop, Gandasil D, MKP, Dithane, Regent" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                                
+                                <!-- Live Product Preview Container -->
+                                <div id="liveProductPreview" class="hidden mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs">
+                                    <div class="font-bold text-emerald-800 flex items-center gap-1.5" id="liveProdTitle"><i class="fa-solid fa-circle-info"></i> Info Produk Terdeteksi</div>
+                                    <p class="text-slate-700"><span class="font-semibold text-slate-900">Kandungan:</span> <span id="liveProdIngredients">-</span></p>
+                                    <p class="text-slate-700"><span class="font-semibold text-slate-900">Fungsi:</span> <span id="liveProdFunction">-</span></p>
+                                    <p class="text-slate-700"><span class="font-semibold text-slate-900">Cara Kerja:</span> <span id="liveProdMechanism">-</span></p>
+                                </div>
+                            </div>
+
+                            <!-- INTEGRATED DOSE CALCULATOR -->
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                                <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-calculator text-emerald-600"></i> Kalkulator Dosis (Tangki & Drum)
+                                    </h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Hitung Otomatis</span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Dosis Kemasan (per Liter Air)</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" step="0.1" id="dosePerLiterInput" value="2" oninput="calculateDose()" placeholder="Contoh: 2" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                        <select id="doseUnitInput" onchange="calculateDose()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 bg-white cursor-pointer">
+                                            <option value="gr">Gram (gr)</option>
+                                            <option value="ml">Mili (ml)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Result Cards Grid -->
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="p-2.5 bg-white rounded-xl border border-emerald-200">
+                                        <span class="block text-[10px] font-bold text-emerald-800">TANGKI 16 LITER</span>
+                                        <span class="text-base font-extrabold text-emerald-700" id="resTank16">32 gr</span>
+                                        <p class="text-[10px] text-slate-500 mt-0.5" id="resTank16Detail">± 2.1 Sdm</p>
+                                    </div>
+
+                                    <div class="p-2.5 bg-white rounded-xl border border-blue-200">
+                                        <span class="block text-[10px] font-bold text-blue-800">TANGKI 20 LITER</span>
+                                        <span class="text-base font-extrabold text-blue-700" id="resTank20">40 gr</span>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Tangki Besar</p>
+                                    </div>
+
+                                    <div class="p-2.5 bg-white rounded-xl border border-amber-200 col-span-2">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <span class="block text-[10px] font-bold text-amber-900">DRUM KOCOR / SEMPROT (200 LITER)</span>
+                                                <span class="text-lg font-extrabold text-amber-700" id="resDrum200">400 gr</span>
+                                            </div>
+                                            <span class="text-[10px] font-medium text-slate-600" id="resDrum200Detail">± 26.7 Sdm</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Volume Option -->
+                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-1">Vol. Kustom (Liter)</label>
+                                        <input type="number" id="doseCustomVolInput" oninput="calculateDose()" placeholder="Misal: 100" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-1">Jumlah Wadah</label>
+                                        <input type="number" id="doseQtyInput" value="1" min="1" oninput="calculateDose()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                    </div>
+                                </div>
+
+                                <div id="resCustomVolContainer" class="hidden p-2.5 bg-purple-50 border border-purple-200 rounded-xl space-y-0.5 text-xs">
+                                    <p class="text-[10px] font-bold text-purple-900 uppercase" id="resCustomVolLabel">Total Kebutuhan:</p>
+                                    <p class="text-base font-black text-purple-700" id="resCustomVolVal">0 gr</p>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-plus-circle"></i> Tambah Log Catatan
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- History Timeline -->
+                    <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-history text-emerald-600"></i> Riwayat & Jurnal Aktivitas
+                                </h2>
+                                <p class="text-xs text-slate-500 mt-1">Daftar semua perlakuan pertanian yang telah dicatat.</p>
+                            </div>
+                            <button onclick="exportJournalCSV()" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-file-csv"></i> Export CSV
+                            </button>
+                        </div>
+
+                        <div id="journalList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                            <!-- Dynamic Journal Entries -->
+                        </div>
+
+                        <div id="emptyJournalState" class="hidden text-center py-12">
+                            <i class="fa-solid fa-clipboard-list text-4xl text-slate-300 mb-2"></i>
+                            <p class="text-slate-500 text-sm">Belum ada jurnal perlakuan dicatat.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 border-t border-slate-700 mt-10">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
+            <p class="font-medium text-slate-300">Taniku - By <a href="https://cpp28.blogspot.com" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 underline font-bold transition">•cpp28</a></p>
+            <p>Membantu petani mengoptimalkan dosis pupuk, kalsium, perekat, dan aplikasi pestisida secara presisi.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA PRESETS ---
+        const CROP_PRESETS = {
+            'Bawang Daun': { totalDays: 70, defaultArea: '1.000 Rumpun' },
+            'Kol': { totalDays: 80, defaultArea: '1.000 Pohon' },
+            'Cabai': { totalDays: 120, defaultArea: '1.000 Pohon' },
+            'Brokoli': { totalDays: 75, defaultArea: '1.000 Pohon' },
+            'Kentang': { totalDays: 100, defaultArea: '1.000 m²' },
+            'Seledri': { totalDays: 100, defaultArea: '1.000 Rumpun' }
+        };
+
+        // --- RECOMMENDATION DATABASE ---
+        const RECOMMENDATIONS_DB = [
+            // BAWANG DAUN
+            {
+                crop: 'Bawang Daun',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Pertumbuhan Awal (HST 1 - 15)',
+                pupuk: 'Kocor NPK High N (2 gr/L) + Asam Humat untuk merangsang pertumbuhan akar dan tunas baru.',
+                pestisida: 'Fungisida Mancozeb/Propineb pencegahan trotol (Alternaria). Insektisida Abamektin jika ada Thrips.',
+                kalsium: 'Kalsium Nitrat (1 gr/L) untuk memperkuat batang tunas muda.',
+                perekat: 'Perekat Perata (0.5 ml/L) wajib karena daun berlapis lilin licin.',
+                tips: 'Jaga kelembapan tanah, hindari genangan air yang memicu pembusukan pangkal akar.'
+            },
+            {
+                crop: 'Bawang Daun',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif Aktif & Pembentukan Rumpun (HST 16 - 45)',
+                pupuk: 'Kocor NPK 16-16-16 (5 gr/L) + ZA/Urea tipis. Semprot pupuk daun Gandasil D (2 gr/L).',
+                pestisida: 'Insektisida Klorfenapir / Emamektin Benzoat untuk ulat grayak. Fungisida Karbendazim + Difenokonazol.',
+                kalsium: 'Kalsium Boron (2 gr/L) semprot rutin agar daun tebal, kaku, tegak dan tidak mudah terkulai.',
+                perekat: 'Perekat & Penembus dosis 1 ml/L.',
+                tips: 'Lakukan pembumbunan tanah di sekitar pangkal rumpun agar batang putih lebih panjang dan kaku.'
+            },
+            {
+                crop: 'Bawang Daun',
+                stageKey: 'GEN',
+                stageName: 'Fase Pemadatan Batang & Rumpun (HST 46 - 60)',
+                pupuk: 'Pupuk Kocor NPK + MKP (3 gr/L) untuk mempertebal dinding daun dan bobot rumpun.',
+                pestisida: 'Fungisida Azoksistrobin + Difenokonazol untuk menjaga daun tetap hijau segar tanpa trotol.',
+                kalsium: 'Kalsium Boron 2 gr/L untuk mencegah pembusukan batang bawah.',
+                perekat: 'Perekat & Penembus 1 ml/L.',
+                tips: 'Kurangi kadar pupuk Nitrogen agar rumpun padat kaku dan berbobot.'
+            },
+            {
+                crop: 'Bawang Daun',
+                stageKey: 'MATURE',
+                stageName: 'Fase Persiapan Panen (HST > 60)',
+                pupuk: 'Hentikan pemupukan Nitrogen tinggi. Berikan Kalium murni jika diperlukan.',
+                pestisida: 'Hentikan penyemprotan pestisida kimia 7-10 hari sebelum panen.',
+                kalsium: 'Aplikasi kalsium akhir untuk meningkatkan daya tahan simpan.',
+                perekat: 'Tidak diperlukan.',
+                tips: 'Lakukan pemanenan pada pagi hari saat kondisi tanaman dalam keadaan segar.'
+            },
+
+            // KOL / KUBIS
+            {
+                crop: 'Kol',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Awal Tanam (HST 1 - 15)',
+                pupuk: 'Kocor NPK 16-16-16 (2-3 gr/L) + pupuk organik cair / asam humat.',
+                pestisida: 'Insektisida Bacillus thuringiensis / Abamektin untuk ulat klobot/daun muda. Fungisida Mankozeb.',
+                kalsium: 'Kalsium Nitrat 1.5 gr/L.',
+                perekat: 'Perekat Perata 0.5 ml/L.',
+                tips: 'Pastikan krop muda bebas dari ulat gantung sejak dini.'
+            },
+            {
+                crop: 'Kol',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif & Pembentukan Krop (HST 16 - 50)',
+                pupuk: 'Susulan NPK 16-16-16 + ZA (tinggi N) untuk memperbesar daun luar pembentuk krop.',
+                pestisida: 'Insektisida Klorfenapir / Emamektin Benzoat / Spinotoram untuk ulat Plutella xylostella & Crocidolomia.',
+                kalsium: 'Kalsium Boron (2 gr/L) sangat penting mencegah Tip Burn (daun dalam krop terbakar/busuk).',
+                perekat: 'Perekat & Penembus 1 ml/L.',
+                tips: 'Penyemprotan ulat disarankan pada sore/malam hari saat ulat aktif.'
+            },
+            {
+                crop: 'Kol',
+                stageKey: 'MATURE',
+                stageName: 'Fase Pemadatan Krop & Panen (HST 51 - 80)',
+                pupuk: 'Semprot MKP / KNO3 Putih (2 gr/L) untuk memadatkan krop.',
+                pestisida: 'Gunakan bio-pestisida atau perhatikan interval waktu henti semprot (PHI).',
+                kalsium: 'Kalsium Boron (2 gr/L) agar krop keras dan tahan disimpan.',
+                perekat: 'Perekat perata 0.5 ml/L.',
+                tips: 'Panen tepat saat krop terasa sangat padat ketika ditekan dengan tangan.'
+            },
+
+            // CABAI
+            {
+                crop: 'Cabai',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Semaian / Perakaran (HST 1 - 15)',
+                pupuk: 'Kocor NPK 16-16-16 dosis ringan 2 gr/L + Asam Humat.',
+                pestisida: 'Insektisida Abamektin (0.5 ml/L) untuk Thrips. Fungisida Mancozeb untuk pencegahan rebah semai.',
+                kalsium: 'Kalsium Nitrat (CNG) 1 gr/L.',
+                perekat: 'Perekat non-ionik dosis rendah 0.25 ml/L.',
+                tips: 'Hindari pemupukan dosis tinggi pada minggu pertama setelah pindah tanam.'
+            },
+            {
+                crop: 'Cabai',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif Aktif (HST 16 - 35)',
+                pupuk: 'Kocor NPK 16-16-16 (5 gr/L). Semprot foliar Gandasil D / Ultradap (2 gr/L).',
+                pestisida: 'Insektisida Imidakloprid / Klorfenapir untuk Thrips & kutu daun. Fungisida Propineb / Chlorothalonil.',
+                kalsium: 'Kalsium Karbonat / Kalsium cair (1.5 gr/L).',
+                perekat: 'Perekat & Penembus dosis 0.5 ml/L.',
+                tips: 'Lakukan penyiangan gulma dan perempelan tunas air di bawah cabang V.'
+            },
+            {
+                crop: 'Cabai',
+                stageKey: 'GEN',
+                stageName: 'Fase Bunga & Pembentukan Buah (HST 36 - 60)',
+                pupuk: 'MKP (3 gr/L) + KNO3 Putih (2 gr/L) untuk memicu pembuahan lebat.',
+                pestisida: 'Insektisida Spinotoram / Fipronil. Fungisida Difenokonazol + Azoksistrobin (Patek/Antraknosa).',
+                kalsium: 'Kalsium Boron (2-3 gr/L) wajib untuk mencegah bunga rontok & busuk ujung buah.',
+                perekat: 'Perekat & Penembus 0.75 - 1 ml/L.',
+                tips: 'Jaga kelembapan tanah agar tidak fluktuatif ekstrem.'
+            },
+            {
+                crop: 'Cabai',
+                stageKey: 'MATURE',
+                stageName: 'Fase Pematangan & Pemetikan Buah (HST > 60)',
+                pupuk: 'Kocor NPK + Kalium Sulfat (KCL/KNO3) per 10-14 hari untuk menjaga kontinuitas panen.',
+                pestisida: 'Rotasi insektisida lalat buah (Bahan aktif Metil Eugenol / Abamektin) & fungisida patek.',
+                kalsium: 'Kalsium Boron (2 gr/L) rutin agar kulit buah tebal dan bobot tinggi.',
+                perekat: 'Perekat 0.5 ml/L.',
+                tips: 'Petik buah bersama tangkainya pada pagi hari untuk ketahanan simpan maksimal.'
+            },
+
+            // BROKOLI
+            {
+                crop: 'Brokoli',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Awal Tanam & Perakaran (HST 1 - 15)',
+                pupuk: 'Kocor NPK 16-16-16 (2-3 gr/L) + Asam Humat untuk merangsang perakaran cepat.',
+                pestisida: 'Insektisida Bacillus thuringiensis / Abamektin pencegahan ulat grayak/klobot. Fungisida Mankozeb.',
+                kalsium: 'Kalsium Nitrat (1.5 gr/L).',
+                perekat: 'Perekat Perata 0.5 ml/L.',
+                tips: 'Pastikan tanah lembap dan bibit terlindung dari terik matahari langsung di awal tanam.'
+            },
+            {
+                crop: 'Brokoli',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif & Pembentukan Bunga Brokoli (HST 16 - 55)',
+                pupuk: 'NPK 16-16-16 (5 gr/L) + ZA. Semprot Gandasil D (2 gr/L) untuk memperbesar tajuk daun.',
+                pestisida: 'Insektisida Klorfenapir / Spinotoram / Emamektin Benzoat untuk ulat Plutella. Fungisida Difenokonazol.',
+                kalsium: 'Kalsium Boron (2 gr/L) sangat vital mencegah Hollow Stem (batang berongga) & Tip Burn.',
+                perekat: 'Perekat & Penembus 1 ml/L.',
+                tips: 'Bunga brokoli rentan membusuk jika terkena air menggenang, pastikan drainase lancar.'
+            },
+
+            // KENTANG
+            {
+                crop: 'Kentang',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Pertunasan & Awal Tanam (HST 1 - 20)',
+                pupuk: 'Pupuk dasar NPK + Organik matang. Kocor NPK (3 gr/L) saat tunas muncul sempurna.',
+                pestisida: 'Fungisida Mancozeb / Chlorothalonil kontak pencegahan awal Phytophthora (Busuk Daun / Hawar). Insektisida Fipronil.',
+                kalsium: 'Kalsium Nitrat (1.5 gr/L).',
+                perekat: 'Perekat Perata 0.5 ml/L.',
+                tips: 'Lakukan pembumbunan tanah pertama saat tinggi tanaman 15-20 cm.'
+            },
+            {
+                crop: 'Kentang',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif & Inisiasi Umbi (HST 21 - 50)',
+                pupuk: 'NPK 16-16-16 + KNO3 Merah / ZA. Pembumbunan tanah kedua.',
+                pestisida: 'Fungisida Sistemik Dimetomorf / Cymoxanil / Metalaksil + Mankozeb untuk serangan Phytophthora infestans (Hawar Daun).',
+                kalsium: 'Kalsium Boron (2-3 gr/L) semprot rutin untuk memperkuat dinding sel dan pembentukan bakal umbi.',
+                perekat: 'Perekat & Penembus 1 ml/L.',
+                tips: 'Pantau kelembapan udara; jika sering hujan/kabut, tingkatkan frekuensi semprot fungisida.'
+            },
+            {
+                crop: 'Kentang',
+                stageKey: 'GEN',
+                stageName: 'Fase Pembesaran Umbi (HST 51 - 85)',
+                pupuk: 'Pupuk tinggi Kalium: MKP (3 gr/L) + KNO3 Putih / KCL cair.',
+                pestisida: 'Fungisida Difenokonazol / Azoksistrobin / Propamokarb. Insektisida Emamektin jika ada ulat grayak.',
+                kalsium: 'Kalsium Boron (3 gr/L) wajib untuk mencegah kulitan pecah (cracking) dan busuk kulit umbi.',
+                perekat: 'Perekat & Penembus 1 ml/L.',
+                tips: 'Hentikan pemupukan Nitrogen agar energi tanaman fokus ke pengisian umbi.'
+            },
+            {
+                crop: 'Kentang',
+                stageKey: 'MATURE',
+                stageName: 'Fase Pematangan Kulit Umbi (HST 86 - 100)',
+                pupuk: 'Hentikan pemupukan.',
+                pestisida: 'Penyemprotan fungisida pemangkas daun (pembabatan) jika diperlukan sebelum pengerukan umbi.',
+                kalsium: 'Tidak diperlukan.',
+                perekat: 'Tidak diperlukan.',
+                tips: 'Biarkan tanaman mengering alami 1-2 minggu sebelum panen agar kulit umbi kuat.'
+            },
+
+            // SELEDRI
+            {
+                crop: 'Seledri',
+                stageKey: 'VEG_EARLY',
+                stageName: 'Fase Awal Tanam (HST 1 - 20)',
+                pupuk: 'Kocor NPK tinggi Nitrogen (1-2 gr/L) halus. Berikan Asam Humat.',
+                pestisida: 'Fungisida Mankozeb / Karbendazim untuk pencegahan bercak daun (Cercospora). Insektisida Abamektin.',
+                kalsium: 'Kalsium Nitrat (1 gr/L).',
+                perekat: 'Perekat perata 0.25 - 0.5 ml/L.',
+                tips: 'Seledri butuh naungan ringan dan kelembapan konstan saat awal tanam.'
+            },
+            {
+                crop: 'Seledri',
+                stageKey: 'VEG',
+                stageName: 'Fase Vegetatif & Anakan (HST 21 - 60)',
+                pupuk: 'Kocor NPK 16-16-16 + ZA rutin 7-10 hari sekali. Semprot Gandasil D + ZPT Giberelin (GA3) dosis rendah.',
+                pestisida: 'Fungisida Difenokonazol / Azoksistrobin rutin mencegah busuk pangkal dan bercak daun. Insektisida Imidakloprid.',
+                kalsium: 'Kalsium Boron (2 gr/L) agar tangkai daun tebal, renyah, dan tidak mudah patah/retak.',
+                perekat: 'Perekat & Penembus 0.5 ml/L.',
+                tips: 'Jaga drainase agar tidak tergenang air yang memicu pembusukan tangkai.'
+            },
+            {
+                crop: 'Seledri',
+                stageKey: 'MATURE',
+                stageName: 'Fase Pemadatan Batang & Panen (HST > 60)',
+                pupuk: 'Kocor NPK + Gandasil D foliar untuk menjaga daun hijau pekat.',
+                pestisida: 'Hindari kimia mendekati waktu petik.',
+                kalsium: 'Kalsium Boron (1.5 gr/L) menjaga kesegaran tangkai.',
+                perekat: 'Perekat perata 0.5 ml/L.',
+                tips: 'Lakukan pemetikan anakan luar atau pemotongan pangkal dengan pisau steril.'
+            }
+        ];
+
+        // --- STREAMING_CHUNK:Building agricultural product knowledge base... ---
+        const PRODUCT_KNOWLEDGE_BASE = [
+            {
+                keywords: ['antracol', 'propineb'],
+                name: 'Antracol 70 WP',
+                kandungan: 'Propineb 70% + Seng (Zn)',
+                fungsi: 'Fungisida Kontak Spektrum Luas (Pencegahan Jamur & Trotol)',
+                caraKerja: 'Racun kontak multi-site yang merusak sel spora jamur serta menyuplai nutrisi seng (Zn) untuk kesehatan daun.'
+            },
+            {
+                keywords: ['dithane', 'mancozeb', 'mankozeb', 'manzate'],
+                name: 'Dithane M-45 / Mankozeb',
+                kandungan: 'Mancozeb 80%',
+                fungsi: 'Fungisida Protektif Kontak (Hawar Daun, Bercak, & Patek)',
+                caraKerja: 'Menghambat respirasi dan pembelahan sel spora jamur pathogen secara kontak sebelum masuk ke jaringan.'
+            },
+            {
+                keywords: ['amistartop', 'amistar', 'azoksistrobin', 'difenokonazol'],
+                name: 'Amistartop 325 SC',
+                kandungan: 'Azoksistrobin 200 g/L + Difenokonazol 125 g/L',
+                fungsi: 'Fungisida Sistemik & ZPT (Zat Pengatur Tumbuh)',
+                caraKerja: 'Diresap jaringan tanaman secara translaminar, menghentikan pertumbuhan spora & meningkatkan klorofil daun.'
+            },
+            {
+                keywords: ['prevathon', 'klorantraniliprol'],
+                name: 'Prevathon 50 SC',
+                kandungan: 'Klorantraniliprol 50 g/L',
+                fungsi: 'Insektisida Sistemik Trans-Laminar (Pengendali Ulat Grayak & Klobot)',
+                caraKerja: 'Melumpuhkan reseptor ryanodine sel otot ulat sehingga ulat berhenti makan dalam beberapa jam lalu mati.'
+            },
+            {
+                keywords: ['curacron', 'profenofos'],
+                name: 'Curacron 500 EC',
+                kandungan: 'Profenofos 500 g/L',
+                fungsi: 'Insektisida & Akarisida Kontak/Lambung (Thrips, Kutu, & Ulat)',
+                caraKerja: 'Menghentikan enzim kolinesterase saraf serangga dengan kemampuan menembus jaringan daun (translaminar).'
+            },
+            {
+                keywords: ['abacel', 'agrimec', 'demolish', 'abamektin', 'abamectin'],
+                name: 'Abacel / Abamektin EC',
+                kandungan: 'Abamektin 18 g/L - 36 g/L',
+                fungsi: 'Insektisida & Akarisida Kontak (Thrips, Kutu Daun, & Pengorok)',
+                caraKerja: 'Mengganggu transmisi saraf GABA serangga yang menyebabkan kelumpuhan total pada hama serangga.'
+            },
+            {
+                keywords: ['score'],
+                name: 'Score 250 EC',
+                kandungan: 'Difenokonazol 250 g/L',
+                fungsi: 'Fungisida Sistemik Kuratif & Protektif',
+                caraKerja: 'Menghambat biosintesis ergosterol pada dinding sel jamur secara sistemik cepat.'
+            },
+            {
+                keywords: ['pegasus', 'diafentiuron'],
+                name: 'Pegasus 500 SC',
+                kandungan: 'Diafentiuron 500 g/L',
+                fungsi: 'Akarisida & Insektisida Kontak / Pernapasan (Tungau & Kutu Putih)',
+                caraKerja: 'Menghambat sintesis ATP pada mitokondria sel hama setelah terurai oleh sinar matahari.'
+            },
+            {
+                keywords: ['gandasil d'],
+                name: 'Gandasil D (Daun)',
+                kandungan: 'N 20%, P 15%, K 15% + Magnesium, Boron, Seng',
+                fungsi: 'Pupuk Foliar / Daun Fase Vegetatif',
+                caraKerja: 'Diserap cepat oleh stomata daun untuk merangsang pembentukan tunas, pembesaran batang, & daun hijau kaku.'
+            },
+            {
+                keywords: ['gandasil b'],
+                name: 'Gandasil B (Buah)',
+                kandungan: 'N 6%, P 20%, K 30% + Unsur Mikro',
+                fungsi: 'Pupuk Foliar / Daun Fase Generatif',
+                caraKerja: 'Mempercepat pembentukan bunga, mencegah kerontokan, serta mengoptimalkan bobot buah/umbi.'
+            },
+            {
+                keywords: ['mkp'],
+                name: 'MKP (Mono Kalium Phosphate)',
+                kandungan: 'Phosphate (P2O5) 52% + Kalium (K2O) 34%',
+                fungsi: 'Pupuk Anorganik Generatif Tanpa Nitrogen',
+                caraKerja: 'Menguatkan struktur bunga, menghentikan dominasi vegetatif berlebih, serta memperbesar bobot hasil panen.'
+            },
+            {
+                keywords: ['kno3', 'kno3 putih', 'kno3 merah'],
+                name: 'KNO3 Kalium Nitrat',
+                kandungan: 'Nitrat Nitrogen 13% + Kalium (K2O) 45%',
+                fungsi: 'Pupuk Pembuahan & Pembesaran Umbi/Buah',
+                caraKerja: 'Mudah diserap tanpa mengasamkan tanah, mempercepat pengisian sel buah & memperpanjang daya simpan.'
+            },
+            {
+                keywords: ['npk mutiara', 'npk 161616', 'npk yaramila'],
+                name: 'NPK 16-16-16 Mutiara',
+                kandungan: 'Nitrogen 16%, Phospat 16%, Kalium 16%',
+                fungsi: 'Pupuk Seimbang Pertumbuhan Utama',
+                caraKerja: 'Menyediakan nutrisi makro seimbang untuk pertumbuhan akar, daun, batang, dan calon bunga.'
+            },
+            {
+                keywords: ['asam humat', 'humic acid'],
+                name: 'Asam Humat (Humic Acid)',
+                kandungan: 'Senyawa Asam Humat & Fulvat 60-80%',
+                fungsi: 'Pembenah Tanah & Stimulator Akar',
+                caraKerja: 'Meningkatkan Kapasitas Tukar Kation (KTK) tanah, menetralkan pH, dan mengikat nutrisi agar tidak tercuci.'
+            },
+            {
+                keywords: ['kalsium boron', 'cng', 'kalsium nitrat', 'calcinut'],
+                name: 'Kalsium Boron / CNG',
+                kandungan: 'Kalsium Oksida (CaO) + Boron (B)',
+                fungsi: 'Nutrisi Dinding Sel & Pencegah Busuk Ujung / Tipburn',
+                caraKerja: 'Menyusun ikatan pektin dinding sel tanaman sehingga batang kaku, tidak mudah pecah atau membusuk.'
+            },
+            {
+                keywords: ['perekat', 'agristick', 'besmor', 'spreader'],
+                name: 'Perekat & Penembus',
+                kandungan: 'Alkil Aril Poliglikol Eter / Surfaktan Non-Ionik',
+                fungsi: 'Adjuvant / Bahan Pembantu Semprot',
+                caraKerja: 'Menurunkan tegangan permukaan air semprot agar cairan menempel & menembus daun berlapis lilin/bulu.'
+            },
+            {
+                keywords: ['regent', 'fipronil'],
+                name: 'Regent 50 SC',
+                kandungan: 'Fipronil 50 g/L',
+                fungsi: 'Insektisida Sistemik & ZPT Perakaran',
+                caraKerja: 'Menghambat reseptor GABA saraf serangga serta merangsang pertumbuhan sistem perakaran tanaman.'
+            },
+            {
+                keywords: ['nativo', 'tebukonazol'],
+                name: 'Nativo 75 WG',
+                kandungan: 'Tebukonazol 50% + Triflokststrobin 25%',
+                fungsi: 'Fungisida Sistemik Protektif & Kuratif',
+                caraKerja: 'Melindungi tanaman dari dalam sel jaringan sekaligus menghentikan penyebaran spora jamur.'
+            },
+            {
+                keywords: ['virtako'],
+                name: 'Virtako 300 SC',
+                kandungan: 'Klorantraniliprol 100 g/L + Tiametoksam 200 g/L',
+                fungsi: 'Insektisida Sistemik Kombinasi ganda (Ulat & Sundep/Wereng)',
+                caraKerja: 'Aksi ganda melumpuhkan sistem otot dan saraf serangga secara kontak dan sistemik.'
+            }
+        ];
+
+        // --- STREAMING_CHUNK:Initializing state management and utilities... ---
+        let cropsData = [];
+        let journalData = [];
+        let onConfirmCallback = null;
+
+        try {
+            cropsData = JSON.parse(localStorage.getItem('agri_crops_data')) || [];
+            journalData = JSON.parse(localStorage.getItem('agri_journal_data')) || [];
+        } catch (err) {
+            console.error("Error reading localStorage", err);
+            cropsData = [];
+            journalData = [];
+        }
+
+        // --- PRODUCT LOOKUP LOGIC ---
+        function getProductInfo(inputStr) {
+            if (!inputStr || !inputStr.trim() || inputStr === '-') return null;
+            const search = inputStr.toLowerCase().trim();
+
+            for (const prod of PRODUCT_KNOWLEDGE_BASE) {
+                if (prod.keywords.some(kw => search.includes(kw))) {
+                    return prod;
+                }
+            }
+
+            if (search.includes('fungisida') || search.includes('jamur')) {
+                return {
+                    name: inputStr,
+                    kandungan: 'Senyawa Anti-Jamur / Fungisida Active Ingredient',
+                    fungsi: 'Pengendali Hama Jamur, Bercak Daun, Hawar, & Busuk Akar',
+                    caraKerja: 'Mencegah penetrasi spora jamur dan merusak struktur miselium pathogen.'
+                };
+            } else if (search.includes('insektisida') || search.includes('ulat') || search.includes('thrips')) {
+                return {
+                    name: inputStr,
+                    kandungan: 'Bahan Aktif Insektisida',
+                    fungsi: 'Pembasmi Hama Serangga (Ulat, Thrips, Kutu, & Pengorok Daun)',
+                    caraKerja: 'Bekerja secara kontak, lambung, atau sistemik melumpuhkan sistem saraf/otot serangga.'
+                };
+            } else if (search.includes('pupuk') || search.includes('npk') || search.includes('urea') || search.includes('za')) {
+                return {
+                    name: inputStr,
+                    kandungan: 'Unsur Makro/Mikro Esensial (N, P, K, dll)',
+                    fungsi: 'Asupan Nutrisi Pertumbuhan Vegetatif / Generatif',
+                    caraKerja: 'Diserap melalui jaringan akar atau stomata daun untuk memacu pembelahan sel.'
+                };
+            }
+
+            return {
+                name: inputStr,
+                kandungan: 'Formulasi Khusus Merek ' + inputStr,
+                fungsi: 'Perlakuan Nutrisi / Proteksi Tanaman Khusus',
+                caraKerja: 'Membantu mengoptimalkan kesehatan, pertahanan, dan produktivitas tanaman.'
+            };
+        }
+
+        function liveCheckProductInfo() {
+            const val = document.getElementById('journalProductName').value;
+            const previewBox = document.getElementById('liveProductPreview');
+            if (!val || val.trim() === '') {
+                previewBox.classList.add('hidden');
+                return;
+            }
+            const info = getProductInfo(val);
+            if (info) {
+                document.getElementById('liveProdTitle').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Deteksi Otomatis: <strong>${info.name}</strong>`;
+                document.getElementById('liveProdIngredients').innerText = info.kandungan;
+                document.getElementById('liveProdFunction').innerText = info.fungsi;
+                document.getElementById('liveProdMechanism').innerText = info.caraKerja;
+                previewBox.classList.remove('hidden');
+            } else {
+                previewBox.classList.add('hidden');
+            }
+        }
+
+        // --- NAVIGATION & UI TOGGLES ---
+        function toggleMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('dropdownMenu');
+            const btn = document.getElementById('mainMenuBtn');
+            if (menu && !menu.classList.contains('hidden')) {
+                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            }
+        });
+
+        function switchTab(tabId) {
+            const sections = ['dashboard', 'calculator', 'recommendations', 'journal'];
+            sections.forEach(id => {
+                const sec = document.getElementById(`sec-${id}`);
+                const navBtn = document.getElementById(`nav-${id}`);
+                
+                if (sec) {
+                    if (id === tabId) {
+                        sec.classList.remove('hidden');
+                    } else {
+                        sec.classList.add('hidden');
+                    }
+                }
+
+                if (navBtn) {
+                    if (id === tabId) {
+                        navBtn.classList.add('bg-emerald-50', 'text-emerald-800', 'font-bold');
+                        navBtn.classList.remove('text-slate-700');
+                    } else {
+                        navBtn.classList.remove('bg-emerald-50', 'text-emerald-800', 'font-bold');
+                        navBtn.classList.add('text-slate-700');
+                    }
+                }
+            });
+
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.add('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- CALCULATION HELPERS ---
+        function calculateHST(plantingDateStr) {
+            if (!plantingDateStr) return 0;
+            const plantingDate = new Date(plantingDateStr);
+            if (isNaN(plantingDate.getTime())) return 0;
+            
+            const today = new Date();
+            plantingDate.setHours(0,0,0,0);
+            today.setHours(0,0,0,0);
+
+            const diffTime = today - plantingDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
+        }
+
+        function calculateHarvestDate(plantingDateStr, totalDays) {
+            if (!plantingDateStr) return "-";
+            const date = new Date(plantingDateStr);
+            if (isNaN(date.getTime())) return "-";
+            date.setDate(date.getDate() + parseInt(totalDays || 90));
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function getGrowthPhase(hst, totalDays) {
+            totalDays = totalDays || 90;
+            const ratio = hst / totalDays;
+
+            if (hst <= 15) {
+                return { key: 'VEG_EARLY', name: 'Semaian / Awal Tanam', color: 'bg-slate-100 text-slate-800' };
+            } else if (hst <= 35) {
+                return { key: 'VEG', name: 'Fase Vegetatif (Daun/Akar)', color: 'bg-blue-100 text-blue-800' };
+            } else if (ratio < 0.8) {
+                return { key: 'GEN', name: 'Fase Generatif (Bunga/Buah)', color: 'bg-amber-100 text-amber-800' };
+            } else {
+                return { key: 'MATURE', name: 'Fase Pengisian & Siap Panen', color: 'bg-purple-100 text-purple-800' };
+            }
+        }
+
+        // --- FORM & CROP LOGIC ---
+        function getSelectedCropType() {
+            const selectVal = document.getElementById('inputCropType').value;
+            if (selectVal === 'CUSTOM') {
+                return document.getElementById('inputCustomCropType').value.trim() || "Tanaman Lain";
+            }
+            return selectVal;
+        }
+
+        function handleCropTypeChange() {
+            const selectVal = document.getElementById('inputCropType').value;
+            const customContainer = document.getElementById('customCropContainer');
+            const customInput = document.getElementById('inputCustomCropType');
+
+            if (selectVal === 'CUSTOM') {
+                customContainer.classList.remove('hidden');
+                customInput.required = true;
+            } else {
+                customContainer.classList.add('hidden');
+                customInput.required = false;
+                customInput.value = '';
+                if (CROP_PRESETS[selectVal] && !document.getElementById('inputAreaNotes').value) {
+                    document.getElementById('inputAreaNotes').value = CROP_PRESETS[selectVal].defaultArea;
+                }
+            }
+            calculateLivePreview();
+        }
+
+        function calculateLivePreview() {
+            const cropType = getSelectedCropType() || "Belum Dipilih";
+            const plantingDate = document.getElementById('inputPlantingDate').value;
+            
+            const totalDays = CROP_PRESETS[cropType]?.totalDays || 90;
+
+            const hst = plantingDate ? calculateHST(plantingDate) : 0;
+            const phase = getGrowthPhase(hst, totalDays);
+            const progress = Math.min(Math.round((hst / totalDays) * 100), 100);
+
+            document.getElementById('prevCropType').innerText = cropType;
+            document.getElementById('prevHST').innerText = hst;
+            document.getElementById('prevHarvestDate').innerText = plantingDate ? calculateHarvestDate(plantingDate, totalDays) : "-";
+            document.getElementById('prevGrowthPhase').innerText = phase.name;
+            document.getElementById('prevProgressPercent').innerText = `${progress}%`;
+            document.getElementById('prevProgressBar').style.width = `${progress}%`;
+        }
+
+        // --- STREAMING_CHUNK:Rendering dashboard dynamic elements... ---
+        function renderDashboard() {
+            const container = document.getElementById('cropsGrid');
+            const emptyState = document.getElementById('emptyCropsState');
+            container.innerHTML = '';
+
+            if (cropsData.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('dashTotalCrops').innerText = '0';
+                document.getElementById('dashVegetative').innerText = '0';
+                document.getElementById('dashGenerative').innerText = '0';
+                document.getElementById('dashHarvestReady').innerText = '0';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            let vegCount = 0, genCount = 0, harvestReadyCount = 0;
+
+            cropsData.forEach(crop => {
+                const hst = calculateHST(crop.plantingDate);
+                const phase = getGrowthPhase(hst, crop.totalHarvestDays);
+                const progress = Math.min(Math.round((hst / crop.totalHarvestDays) * 100), 100);
+
+                if (phase.key === 'VEG_EARLY' || phase.key === 'VEG') vegCount++;
+                if (phase.key === 'GEN') genCount++;
+                if (progress >= 80) harvestReadyCount++;
+
+                const cardHtml = `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start gap-2 mb-3">
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                        ${crop.cropType}
+                                    </span>
+                                    <h3 class="font-bold text-slate-800 text-base mt-1.5">${crop.plotName}</h3>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-2xl font-black text-emerald-700">${hst}</span>
+                                    <span class="text-xs text-slate-500 font-semibold">HST</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 text-xs text-slate-600 my-4">
+                                <div class="flex justify-between py-1 border-b border-slate-100">
+                                    <span class="text-slate-400">Tgl Tanam:</span>
+                                    <span class="font-medium">${new Date(crop.plantingDate).toLocaleDateString('id-ID')}</span>
+                                </div>
+                                <div class="flex justify-between py-1 border-b border-slate-100">
+                                    <span class="text-slate-400">Est. Panen:</span>
+                                    <span class="font-medium">${calculateHarvestDate(crop.plantingDate, crop.totalHarvestDays)}</span>
+                                </div>
+                                <div class="flex justify-between py-1 border-b border-slate-100">
+                                    <span class="text-slate-400">Fase Tumbuh:</span>
+                                    <span class="font-bold px-2 py-0.5 rounded ${phase.color}">${phase.name}</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs font-semibold text-slate-500">
+                                    <span>Progres Umur</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-emerald-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                            <button onclick="viewRecommendationsForCrop('${crop.cropType}', '${phase.key}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 cursor-pointer">
+                                <i class="fa-solid fa-flask-vial"></i> Dosis Nutrisi
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="editCrop('${crop.id}')" title="Edit Lahan" class="text-slate-400 hover:text-slate-600 text-xs p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="deleteCrop('${crop.id}')" title="Hapus Data" class="text-red-400 hover:text-red-600 text-xs p-1.5 rounded-lg hover:bg-red-50 cursor-pointer">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            document.getElementById('dashTotalCrops').innerText = cropsData.length;
+            document.getElementById('dashVegetative').innerText = vegCount;
+            document.getElementById('dashGenerative').innerText = genCount;
+            document.getElementById('dashHarvestReady').innerText = harvestReadyCount;
+        }
+
+        // --- CROP CRUD & STORAGE ---
+        function handleSaveCrop(e) {
+            e.preventDefault();
+            const id = document.getElementById('editCropId').value || 'crop_' + Date.now();
+            const plotName = document.getElementById('inputPlotName').value;
+            const cropType = getSelectedCropType();
+            const plantingDate = document.getElementById('inputPlantingDate').value;
+            const totalHarvestDays = CROP_PRESETS[cropType]?.totalDays || 90;
+            const areaNotes = document.getElementById('inputAreaNotes').value;
+
+            const existingIndex = cropsData.findIndex(c => c.id === id);
+            const newCrop = { id, plotName, cropType, plantingDate, totalHarvestDays, areaNotes };
+
+            if (existingIndex >= 0) {
+                cropsData[existingIndex] = newCrop;
+                showToast("Data lahan berhasil diperbarui!");
+            } else {
+                cropsData.push(newCrop);
+                showToast("Lahan baru berhasil disimpan!");
+            }
+
+            saveToLocalStorage();
+            resetForm();
+            renderDashboard();
+            populateJournalCropSelect();
+            switchTab('dashboard');
+        }
+
+        function editCrop(id) {
+            const crop = cropsData.find(c => c.id === id);
+            if (!crop) return;
+
+            document.getElementById('editCropId').value = crop.id;
+            document.getElementById('inputPlotName').value = crop.plotName;
+
+            const selectElem = document.getElementById('inputCropType');
+            const customContainer = document.getElementById('customCropContainer');
+            const customInput = document.getElementById('inputCustomCropType');
+
+            if (CROP_PRESETS[crop.cropType] || Array.from(selectElem.options).some(o => o.value === crop.cropType)) {
+                selectElem.value = crop.cropType;
+                customContainer.classList.add('hidden');
+                customInput.required = false;
+                customInput.value = '';
+            } else {
+                selectElem.value = 'CUSTOM';
+                customContainer.classList.remove('hidden');
+                customInput.required = true;
+                customInput.value = crop.cropType;
+            }
+
+            document.getElementById('inputPlantingDate').value = crop.plantingDate;
+            document.getElementById('inputAreaNotes').value = crop.areaNotes || '';
+
+            calculateLivePreview();
+            switchTab('calculator');
+        }
+
+        function deleteCrop(id) {
+            openConfirmModal("Hapus Data Lahan", "Apakah Anda yakin ingin menghapus data lahan ini?", function() {
+                cropsData = cropsData.filter(c => c.id !== id);
+                saveToLocalStorage();
+                renderDashboard();
+                populateJournalCropSelect();
+                showToast("Data lahan telah dihapus", "warning");
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('cropForm').reset();
+            document.getElementById('editCropId').value = '';
+            document.getElementById('customCropContainer').classList.add('hidden');
+            document.getElementById('inputCustomCropType').required = false;
+            document.getElementById('inputPlantingDate').value = new Date().toISOString().split('T')[0];
+            calculateLivePreview();
+        }
+
+        // --- STREAMING_CHUNK:Rendering recommendation cards and filtering... ---
+        function renderRecommendations() {
+            const selectedCrop = document.getElementById('filterRecCrop').value;
+            const selectedStage = document.getElementById('filterRecStage').value;
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = '';
+
+            let filtered = RECOMMENDATIONS_DB.filter(r => r.crop === selectedCrop);
+            if (selectedStage !== 'ALL') {
+                filtered = filtered.filter(r => r.stageKey === selectedStage);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center border border-slate-200">
+                        <i class="fa-solid fa-leaf text-3xl text-slate-300 mb-2"></i>
+                        <p class="text-slate-500 text-sm">Belum ada panduan khusus untuk kombinasi filter ini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(rec => {
+                const card = `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+                                ${rec.stageName}
+                            </span>
+                            <span class="text-xs text-slate-400 font-medium">${rec.crop}</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 space-y-1">
+                                <span class="text-xs font-bold text-emerald-800 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-seedling text-emerald-600"></i> Rekomendasi Pupuk
+                                </span>
+                                <p class="text-xs text-slate-700 leading-relaxed">${rec.pupuk}</p>
+                            </div>
+
+                            <div class="p-3.5 bg-amber-50/60 rounded-xl border border-amber-100 space-y-1">
+                                <span class="text-xs font-bold text-amber-800 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-bug text-amber-600"></i> Pestisida & Fungisida
+                                </span>
+                                <p class="text-xs text-slate-700 leading-relaxed">${rec.pestisida}</p>
+                            </div>
+
+                            <div class="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100 space-y-1">
+                                <span class="text-xs font-bold text-blue-800 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-shield-halved text-blue-600"></i> Kalsium & Nutrisi
+                                </span>
+                                <p class="text-xs text-slate-700 leading-relaxed">${rec.kalsium}</p>
+                            </div>
+
+                            <div class="p-3.5 bg-purple-50/60 rounded-xl border border-purple-100 space-y-1">
+                                <span class="text-xs font-bold text-purple-800 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-droplet text-purple-600"></i> Perekat / Penembus
+                                </span>
+                                <p class="text-xs text-slate-700 leading-relaxed">${rec.perekat}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-xl text-xs text-slate-600 flex items-start gap-2 border border-slate-200">
+                            <i class="fa-solid fa-lightbulb text-amber-500 text-sm mt-0.5"></i>
+                            <div>
+                                <span class="font-bold text-slate-700">Tips Budidaya:</span> ${rec.tips}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function viewRecommendationsForCrop(cropType, stageKey) {
+            const selectCrop = document.getElementById('filterRecCrop');
+            if (Array.from(selectCrop.options).some(o => o.value === cropType)) {
+                selectCrop.value = cropType;
+            } else {
+                selectCrop.value = "Bawang Daun";
+            }
+            
+            document.getElementById('filterRecStage').value = stageKey || 'ALL';
+            renderRecommendations();
+            switchTab('recommendations');
+        }
+
+        // --- DOSE CALCULATOR LOGIC ---
+        function calculateDose() {
+            const dosePerLiter = parseFloat(document.getElementById('dosePerLiterInput').value) || 0;
+            const unit = document.getElementById('doseUnitInput').value;
+            const customVol = parseFloat(document.getElementById('doseCustomVolInput').value) || 0;
+            const containerQty = parseFloat(document.getElementById('doseQtyInput').value) || 1;
+
+            const perTank16 = dosePerLiter * 16;
+            const perTank20 = dosePerLiter * 20;
+            const perDrum200 = dosePerLiter * 200;
+            const perCustomVol = dosePerLiter * customVol;
+            const grandTotal = perCustomVol > 0 ? (perCustomVol * containerQty) : (perTank16 * containerQty);
+
+            const spoons16L = (perTank16 / 15).toFixed(1);
+            const caps16L = (perTank16 / 10).toFixed(1);
+            const spoonsDrum = (perDrum200 / 15).toFixed(1);
+            const capsDrum = (perDrum200 / 10).toFixed(1);
+
+            document.getElementById('resTank16').innerText = perTank16 >= 1000 ? `${(perTank16/1000).toFixed(2)} Kg/L` : `${perTank16} ${unit}`;
+            document.getElementById('resTank16Detail').innerText = unit === 'gr' ? `± ${spoons16L} Sendok Makan` : `± ${caps16L} Tutup Botol (10ml)`;
+            
+            document.getElementById('resTank20').innerText = perTank20 >= 1000 ? `${(perTank20/1000).toFixed(2)} Kg/L` : `${perTank20} ${unit}`;
+            
+            document.getElementById('resDrum200').innerText = perDrum200 >= 1000 ? `${(perDrum200/1000).toFixed(2)} Kg / L` : `${perDrum200} ${unit}`;
+            document.getElementById('resDrum200Detail').innerText = unit === 'gr' ? `± ${spoonsDrum} Sendok Makan` : `± ${capsDrum} Tutup Botol`;
+
+            if (customVol > 0) {
+                document.getElementById('resCustomVolContainer').classList.remove('hidden');
+                document.getElementById('resCustomVolLabel').innerText = `Total Kebutuhan (${customVol} Liter x ${containerQty} Wadah):`;
+                document.getElementById('resCustomVolVal').innerText = grandTotal >= 1000 ? `${(grandTotal/1000).toFixed(2)} Kg/L` : `${grandTotal} ${unit}`;
+            } else {
+                document.getElementById('resCustomVolContainer').classList.add('hidden');
+            }
+        }
+
+        // --- STREAMING_CHUNK:Rendering journal logs and handling entries... ---
+        function populateJournalCropSelect() {
+            const select = document.getElementById('journalCropSelect');
+            select.innerHTML = '';
+            
+            if (cropsData.length === 0) {
+                select.innerHTML = '<option value="">-- Tidak ada lahan terdaftar --</option>';
+                return;
+            }
+
+            cropsData.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.plotName} (${c.cropType})</option>`;
+            });
+        }
+
+        function handleSaveJournal(e) {
+            e.preventDefault();
+            const cropId = document.getElementById('journalCropSelect').value;
+            if (!cropId) {
+                showToast("Silakan daftarkan lahan terlebih dahulu", "warning");
+                return;
+            }
+
+            const productName = document.getElementById('journalProductName').value.trim() || '-';
+
+            const newEntry = {
+                id: 'j_' + Date.now(),
+                cropId,
+                type: document.getElementById('journalType').value,
+                date: document.getElementById('journalDate').value,
+                productName: productName
+            };
+
+            journalData.unshift(newEntry);
+            saveToLocalStorage();
+            renderJournal();
+            document.getElementById('journalForm').reset();
+            document.getElementById('liveProductPreview').classList.add('hidden');
+            document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+            calculateDose();
+            showToast("Log perlakuan & analisa produk berhasil dicatat!");
+        }
+
+        function renderJournal() {
+            const container = document.getElementById('journalList');
+            const emptyState = document.getElementById('emptyJournalState');
+            container.innerHTML = '';
+
+            if (journalData.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            journalData.forEach(j => {
+                const crop = cropsData.find(c => c.id === j.cropId) || { plotName: 'Lahan Terhapus', cropType: '-' };
+                const prodInfo = getProductInfo(j.productName || j.notes);
+                
+                const entryHtml = `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between gap-3 hover:border-emerald-300 transition space-y-2">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-md">
+                                    ${j.type}
+                                </span>
+                                <span class="text-xs font-bold text-slate-800">${crop.plotName}</span>
+                                <span class="text-xs text-slate-400">• ${new Date(j.date).toLocaleDateString('id-ID')}</span>
+                            </div>
+                            <button onclick="deleteJournal('${j.id}')" title="Hapus Log" class="text-xs text-slate-400 hover:text-red-500 self-end md:self-center cursor-pointer">
+                                <i class="fa-solid fa-trash"></i> Hapus
+                            </button>
+                        </div>
+
+                        ${prodInfo ? `
+                            <div class="bg-white p-3 rounded-lg border border-emerald-100 text-xs space-y-1 mt-1 shadow-sm">
+                                <div class="font-bold text-emerald-800 flex items-center justify-between">
+                                    <span><i class="fa-solid fa-prescription-bottle-medical text-emerald-600 mr-1.5"></i>Produk: ${prodInfo.name}</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1 text-[11px]">
+                                    <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="block font-bold text-slate-700">💊 Kandungan:</span>
+                                        <span class="text-slate-600">${prodInfo.kandungan}</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="block font-bold text-slate-700">🎯 Fungsi Produk:</span>
+                                        <span class="text-slate-600">${prodInfo.fungsi}</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="block font-bold text-slate-700">⚡ Cara Kerja:</span>
+                                        <span class="text-slate-600">${prodInfo.caraKerja}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', entryHtml);
+            });
+        }
+
+        function deleteJournal(id) {
+            openConfirmModal("Hapus Catatan Jurnal", "Apakah Anda yakin ingin menghapus catatan jurnal ini?", function() {
+                journalData = journalData.filter(j => j.id !== id);
+                saveToLocalStorage();
+                renderJournal();
+                showToast("Log jurnal berhasil dihapus", "warning");
+            });
+        }
+
+        function exportJournalCSV() {
+            if (journalData.length === 0) {
+                showToast("Tidak ada data jurnal untuk diexport", "warning");
+                return;
+            }
+
+            let csvContent = "\uFEFFTanggal,Nama Lahan,Jenis Perlakuan,Nama Produk,Kandungan,Fungsi,Cara Kerja\n";
+            journalData.forEach(j => {
+                const crop = cropsData.find(c => c.id === j.cropId) || { plotName: 'Lahan Terhapus' };
+                const prodInfo = getProductInfo(j.productName || j.notes) || { kandungan: '-', fungsi: '-', caraKerja: '-' };
+                
+                const cleanDate = `"${j.date}"`;
+                const cleanPlot = `"${crop.plotName.replace(/"/g, '""')}"`;
+                const cleanType = `"${j.type.replace(/"/g, '""')}"`;
+                const cleanProd = `"${(j.productName||'-').replace(/"/g, '""')}"`;
+                const cleanIngr = `"${prodInfo.kandungan.replace(/"/g, '""')}"`;
+                const cleanFunc = `"${prodInfo.fungsi.replace(/"/g, '""')}"`;
+                const cleanMech = `"${prodInfo.caraKerja.replace(/"/g, '""')}"`;
+
+                csvContent += `${cleanDate},${cleanPlot},${cleanType},${cleanProd},${cleanIngr},${cleanFunc},${cleanMech}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Jurnal_Perawatan_Tani_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- CUSTOM CONFIRMATION MODAL ---
+        function openConfirmModal(title, message, callback) {
+            document.getElementById('confirmModalTitle').innerText = title;
+            document.getElementById('confirmModalMessage').innerText = message;
+            onConfirmCallback = callback;
+            
+            const btn = document.getElementById('modalConfirmBtn');
+            btn.onclick = function() {
+                if (onConfirmCallback) onConfirmCallback();
+                closeConfirmModal();
+            };
+
+            document.getElementById('customConfirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('customConfirmModal').classList.add('hidden');
+            onConfirmCallback = null;
+        }
+
+        // --- UTILS & STORAGE ---
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('agri_crops_data', JSON.stringify(cropsData));
+                localStorage.setItem('agri_journal_data', JSON.stringify(journalData));
+            } catch (err) {
+                console.error("Failed to write to localStorage", err);
+            }
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-800 text-white' : 'bg-amber-800 text-white';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg font-medium text-xs flex items-center gap-2 transform transition duration-300 opacity-0 translate-y-2 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function copyGasCode() {
+            const codeText = document.getElementById('gasCodeText').innerText;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = codeText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("Kode Backend Code.gs telah disalin!");
+        }
+
+        // --- STREAMING_CHUNK:Bootstrapping application on page load... ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const todayISO = today.toISOString().split('T')[0];
+            
+            document.getElementById('currentDateBadge').innerText = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('inputPlantingDate').value = todayISO;
+            document.getElementById('journalDate').value = todayISO;
+
+            // Sample initial data if first time visitor
+            if (cropsData.length === 0) {
+                const samplePlantDate = new Date();
+                samplePlantDate.setDate(samplePlantDate.getDate() - 25);
+                cropsData = [{
+                    id: 'crop_sample_1',
+                    plotName: 'Lahan Utama Bawang Daun',
+                    cropType: 'Bawang Daun',
+                    plantingDate: samplePlantDate.toISOString().split('T')[0],
+                    totalHarvestDays: 70,
+                    areaNotes: '1.000 Rumpun'
+                }];
+                saveToLocalStorage();
+            }
+
+            renderDashboard();
+            renderRecommendations();
+            populateJournalCropSelect();
+            renderJournal();
+            calculateLivePreview();
+            calculateDose();
+        });
+    </script>
+</body>
+</html>
+```
