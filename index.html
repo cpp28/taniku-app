@@ -1,33 +1,27 @@
-```html
-<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Taniku cpp28 - Penghitung HST & Panduan Nutrisi/Pestisida Pertanian">
     <title>Taniku cpp28 - Penghitung HST & Panduan Pertanian</title>
     
-    <!-- Preconnect for fast font & asset fetching -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Google Fonts Inter with font-display swap for fast render -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         * { -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; user-select: none; }
         .gradient-bg { background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
-        .tab-active { background-color: #ecfdf5; color: #065f46; font-weight: 700; }
+        input, select, textarea { user-select: text; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-white">
@@ -37,12 +31,12 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center space-x-3 relative">
-                        <!-- Hamburger Button -->
+                        <!-- Hamburger Navigation Button -->
                         <button onclick="toggleMenu(event)" id="mainMenuBtn" aria-label="Buka Menu Utama" class="p-2 hover:bg-white/20 rounded-xl transition text-emerald-100 hover:text-white text-xl flex items-center justify-center border border-white/10 active:scale-95 cursor-pointer">
                             <i class="fa-solid fa-bars"></i>
                         </button>
 
-                        <!-- App Icon & Title -->
+                        <!-- App Branding -->
                         <div class="p-2 bg-white/20 rounded-lg backdrop-blur-md flex items-center justify-center">
                             <i class="fa-solid font-bold text-xl sm:text-2xl fa-seedling text-emerald-200"></i>
                         </div>
@@ -51,7 +45,7 @@
                             <p class="text-[10px] sm:text-xs text-emerald-100 hidden sm:block">Penghitung HST & Rekomendasi Nutrisi/Pestisida</p>
                         </div>
 
-                        <!-- Dropdown Nav Menu -->
+                        <!-- Dropdown Menu -->
                         <div id="dropdownMenu" class="hidden absolute top-14 left-0 w-64 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 transition-all duration-200">
                             <div class="px-4 py-2 border-b border-slate-100">
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Menu Utama</p>
@@ -82,10 +76,8 @@
             </div>
         </header>
 
-        <!-- Notification Toast Container -->
         <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2 pointer-events-none"></div>
 
-        <!-- Custom Delete Confirmation Modal -->
         <div id="customConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-opacity">
             <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4 border border-slate-100">
                 <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mx-auto">
@@ -104,9 +96,7 @@
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-            <!-- TAB 1: DASHBOARD -->
             <section id="sec-dashboard" class="space-y-6">
-                <!-- Summary Stats Bar -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
                         <div>
@@ -146,7 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Active Crops Grid -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                         <div>
@@ -158,12 +147,8 @@
                         </button>
                     </div>
 
-                    <!-- Crop Cards Container -->
-                    <div id="cropsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        <!-- Populated by JS -->
-                    </div>
+                    <div id="cropsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-                    <!-- Empty State -->
                     <div id="emptyCropsState" class="hidden text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl">
                         <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
                             <i class="fa-solid fa-seedling"></i>
@@ -177,10 +162,8 @@
                 </div>
             </section>
 
-            <!-- TAB 2: CALCULATOR HST & NEW CROP -->
             <section id="sec-calculator" class="hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- Form Input -->
                     <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="border-b border-slate-100 pb-4 mb-5">
                             <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -211,7 +194,6 @@
                                 </select>
                             </div>
 
-                            <!-- Input Manual Jenis Tanaman -->
                             <div id="customCropContainer" class="hidden">
                                 <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Tanaman (Input Manual)</label>
                                 <input type="text" id="inputCustomCropType" oninput="calculateLivePreview()" placeholder="Contoh: Terong, Porang, Buncis, Mentimun" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
@@ -239,7 +221,6 @@
                         </form>
                     </div>
 
-                    <!-- Live HST Preview & Phase Information -->
                     <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                         <div>
                             <div class="border-b border-slate-100 pb-4 mb-5">
@@ -282,7 +263,6 @@
                             </div>
                         </div>
 
-                        <!-- Growth Phase Standard Guide -->
                         <div class="mt-6 pt-4 border-t border-slate-100">
                             <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Panduan Rentang Fase Tanaman Umum:</h4>
                             <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -304,9 +284,7 @@
                 </div>
             </section>
 
-            <!-- TAB 3: RECOMMENDATIONS CATALOG -->
             <section id="sec-recommendations" class="hidden space-y-6">
-                <!-- Filter Bar -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -338,16 +316,11 @@
                     </div>
                 </div>
 
-                <!-- Recommendation Cards List -->
-                <div id="recommendationsList" class="space-y-5">
-                    <!-- Dynamic Recommendation Cards Inserted Here -->
-                </div>
+                <div id="recommendationsList" class="space-y-5"></div>
             </section>
 
-            <!-- TAB 4: MAINTENANCE JOURNAL -->
             <section id="sec-journal" class="hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- Add Activity Form & Integrated Dose Calculator -->
                     <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
                         <div class="border-b border-slate-100 pb-4">
                             <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -359,9 +332,7 @@
                         <form id="journalForm" onsubmit="handleSaveJournal(event)" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Pilih Tanaman / Lahan</label>
-                                <select id="journalCropSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                                    <!-- Populated via JS -->
-                                </select>
+                                <select id="journalCropSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"></select>
                             </div>
 
                             <div>
@@ -384,7 +355,6 @@
                                 <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Produk / Merk (Otomatis Deteksi Khasiat)</label>
                                 <input type="text" id="journalProductName" oninput="liveCheckProductInfo()" placeholder="Contoh: Antracol, Prevathon, Amistartop, Gandasil D, MKP, Dithane, Regent" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
                                 
-                                <!-- Live Product Preview Container -->
                                 <div id="liveProductPreview" class="hidden mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs">
                                     <div class="font-bold text-emerald-800 flex items-center gap-1.5" id="liveProdTitle"><i class="fa-solid fa-circle-info"></i> Info Produk Terdeteksi</div>
                                     <p class="text-slate-700"><span class="font-semibold text-slate-900">Kandungan:</span> <span id="liveProdIngredients">-</span></p>
@@ -413,7 +383,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Result Cards Grid -->
                                 <div class="grid grid-cols-2 gap-2 text-xs">
                                     <div class="p-2.5 bg-white rounded-xl border border-emerald-200">
                                         <span class="block text-[10px] font-bold text-emerald-800">TANGKI 16 LITER</span>
@@ -438,7 +407,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Custom Volume Option -->
                                 <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
                                     <div>
                                         <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-1">Vol. Kustom (Liter)</label>
@@ -462,7 +430,6 @@
                         </form>
                     </div>
 
-                    <!-- History Timeline -->
                     <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
                             <div>
@@ -476,9 +443,7 @@
                             </button>
                         </div>
 
-                        <div id="journalList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                            <!-- Dynamic Journal Entries -->
-                        </div>
+                        <div id="journalList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
 
                         <div id="emptyJournalState" class="hidden text-center py-12">
                             <i class="fa-solid fa-clipboard-list text-4xl text-slate-300 mb-2"></i>
@@ -491,7 +456,6 @@
         </main>
     </div>
 
-    <!-- Footer -->
     <footer class="bg-slate-800 text-slate-400 py-6 border-t border-slate-700 mt-10">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
             <p class="font-medium text-slate-300">Taniku - By <a href="https://cpp28.blogspot.com" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 underline font-bold transition">•cpp28</a></p>
@@ -500,7 +464,6 @@
     </footer>
 
     <script>
-        // --- DATA PRESETS ---
         const CROP_PRESETS = {
             'Bawang Daun': { totalDays: 70, defaultArea: '1.000 Rumpun' },
             'Kol': { totalDays: 80, defaultArea: '1.000 Pohon' },
@@ -510,7 +473,6 @@
             'Seledri': { totalDays: 100, defaultArea: '1.000 Rumpun' }
         };
 
-        // --- RECOMMENDATION DATABASE ---
         const RECOMMENDATIONS_DB = [
             // BAWANG DAUN
             {
@@ -725,7 +687,6 @@
             }
         ];
 
-        // --- STREAMING_CHUNK:Building agricultural product knowledge base... ---
         const PRODUCT_KNOWLEDGE_BASE = [
             {
                 keywords: ['antracol', 'propineb'],
@@ -862,7 +823,6 @@
             }
         ];
 
-        // --- STREAMING_CHUNK:Initializing state management and utilities... ---
         let cropsData = [];
         let journalData = [];
         let onConfirmCallback = null;
@@ -876,7 +836,6 @@
             journalData = [];
         }
 
-        // --- PRODUCT LOOKUP LOGIC ---
         function getProductInfo(inputStr) {
             if (!inputStr || !inputStr.trim() || inputStr === '-') return null;
             const search = inputStr.toLowerCase().trim();
@@ -937,7 +896,6 @@
             }
         }
 
-        // --- NAVIGATION & UI TOGGLES ---
         function toggleMenu(event) {
             if (event) event.stopPropagation();
             const menu = document.getElementById('dropdownMenu');
@@ -985,7 +943,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- CALCULATION HELPERS ---
         function calculateHST(plantingDateStr) {
             if (!plantingDateStr) return 0;
             const plantingDate = new Date(plantingDateStr);
@@ -1023,7 +980,6 @@
             }
         }
 
-        // --- FORM & CROP LOGIC ---
         function getSelectedCropType() {
             const selectVal = document.getElementById('inputCropType').value;
             if (selectVal === 'CUSTOM') {
@@ -1069,7 +1025,6 @@
             document.getElementById('prevProgressBar').style.width = `${progress}%`;
         }
 
-        // --- STREAMING_CHUNK:Rendering dashboard dynamic elements... ---
         function renderDashboard() {
             const container = document.getElementById('cropsGrid');
             const emptyState = document.getElementById('emptyCropsState');
@@ -1162,7 +1117,6 @@
             document.getElementById('dashHarvestReady').innerText = harvestReadyCount;
         }
 
-        // --- CROP CRUD & STORAGE ---
         function handleSaveCrop(e) {
             e.preventDefault();
             const id = document.getElementById('editCropId').value || 'crop_' + Date.now();
@@ -1239,7 +1193,6 @@
             calculateLivePreview();
         }
 
-        // --- STREAMING_CHUNK:Rendering recommendation cards and filtering... ---
         function renderRecommendations() {
             const selectedCrop = document.getElementById('filterRecCrop').value;
             const selectedStage = document.getElementById('filterRecStage').value;
@@ -1326,7 +1279,6 @@
             switchTab('recommendations');
         }
 
-        // --- DOSE CALCULATOR LOGIC ---
         function calculateDose() {
             const dosePerLiter = parseFloat(document.getElementById('dosePerLiterInput').value) || 0;
             const unit = document.getElementById('doseUnitInput').value;
@@ -1361,7 +1313,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Rendering journal logs and handling entries... ---
         function populateJournalCropSelect() {
             const select = document.getElementById('journalCropSelect');
             select.innerHTML = '';
@@ -1504,7 +1455,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // --- CUSTOM CONFIRMATION MODAL ---
         function openConfirmModal(title, message, callback) {
             document.getElementById('confirmModalTitle').innerText = title;
             document.getElementById('confirmModalMessage').innerText = message;
@@ -1524,7 +1474,6 @@
             onConfirmCallback = null;
         }
 
-        // --- UTILS & STORAGE ---
         function saveToLocalStorage() {
             try {
                 localStorage.setItem('agri_crops_data', JSON.stringify(cropsData));
@@ -1555,18 +1504,6 @@
             }, 3000);
         }
 
-        function copyGasCode() {
-            const codeText = document.getElementById('gasCodeText').innerText;
-            const tempInput = document.createElement('textarea');
-            tempInput.value = codeText;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showToast("Kode Backend Code.gs telah disalin!");
-        }
-
-        // --- STREAMING_CHUNK:Bootstrapping application on page load... ---
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const todayISO = today.toISOString().split('T')[0];
@@ -1575,7 +1512,6 @@
             document.getElementById('inputPlantingDate').value = todayISO;
             document.getElementById('journalDate').value = todayISO;
 
-            // Sample initial data if first time visitor
             if (cropsData.length === 0) {
                 const samplePlantDate = new Date();
                 samplePlantDate.setDate(samplePlantDate.getDate() - 25);
@@ -1600,4 +1536,3 @@
     </script>
 </body>
 </html>
-```
