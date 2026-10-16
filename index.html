@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Taniku cpp28 - Penghitung HST & Panduan Nutrisi/Pestisida Pertanian">
     <title>Taniku cpp28 - Penghitung HST & Panduan Pertanian</title>
-
+    
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
@@ -467,6 +468,15 @@
     </footer>
 
     <script>
+        // Mendaftarkan Service Worker untuk PWA Offline Support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker terdaftar:', reg.scope))
+                    .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
+            });
+        }
+
         const CROP_PRESETS = {
             'Bawang Daun': { totalDays: 70, defaultArea: '1.000 Rumpun' },
             'Kol': { totalDays: 80, defaultArea: '1.000 Pohon' },
@@ -477,7 +487,6 @@
         };
 
         const RECOMMENDATIONS_DB = [
-            // BAWANG DAUN
             {
                 crop: 'Bawang Daun',
                 stageKey: 'VEG_EARLY',
@@ -518,8 +527,6 @@
                 perekat: 'Tidak diperlukan.',
                 tips: 'Lakukan pemanenan pada pagi hari saat kondisi tanaman dalam keadaan segar.'
             },
-
-            // KOL / KUBIS
             {
                 crop: 'Kol',
                 stageKey: 'VEG_EARLY',
@@ -550,8 +557,6 @@
                 perekat: 'Perekat perata 0.5 ml/L.',
                 tips: 'Panen tepat saat krop terasa sangat padat ketika ditekan dengan tangan.'
             },
-
-            // CABAI
             {
                 crop: 'Cabai',
                 stageKey: 'VEG_EARLY',
@@ -592,8 +597,6 @@
                 perekat: 'Perekat 0.5 ml/L.',
                 tips: 'Petik buah bersama tangkainya pada pagi hari untuk ketahanan simpan maksimal.'
             },
-
-            // BROKOLI
             {
                 crop: 'Brokoli',
                 stageKey: 'VEG_EARLY',
@@ -614,8 +617,6 @@
                 perekat: 'Perekat & Penembus 1 ml/L.',
                 tips: 'Bunga brokoli rentan membusuk jika terkena air menggenang, pastikan drainase lancar.'
             },
-
-            // KENTANG
             {
                 crop: 'Kentang',
                 stageKey: 'VEG_EARLY',
@@ -656,8 +657,6 @@
                 perekat: 'Tidak diperlukan.',
                 tips: 'Biarkan tanaman mengering alami 1-2 minggu sebelum panen agar kulit umbi kuat.'
             },
-
-            // SELEDRI
             {
                 crop: 'Seledri',
                 stageKey: 'VEG_EARLY',
