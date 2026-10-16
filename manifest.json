@@ -1,24 +1,45 @@
 {
+"id": "taniku-cpp28",
 "name": "Taniku cpp28",
 "short_name": "Taniku",
 "description": "Penghitung HST & Panduan Nutrisi/Pestisida Pertanian",
-"start_url": "./",
+"start_url": "./Index.html",
 "display": "standalone",
 "background_color": "#059669",
 "theme_color": "#059669",
 "orientation": "portrait",
 "icons": [
 {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+"src": "icon-192.png",
+"sizes": "192x192",
+"type": "image/png"
+},
+{
+"src": "icon-512.png",
+"sizes": "512x512",
+"type": "image/png"
+},
+{
+"src": "icon-maskable.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "maskable"
+}
+],
+"screenshots": [
+{
+"src": "icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"form_factor": "narrow",
+"label": "Tampilan Utama Taniku cpp28"
+},
+{
+"src": "icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"form_factor": "wide",
+"label": "Dashboard Taniku cpp28 Desktop"
+}
+]
 }
