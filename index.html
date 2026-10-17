@@ -310,12 +310,13 @@
 
                         <div>
                             <select id="filterRecCrop" onchange="renderRecommendations()" class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                                <option value="">Semua Tanaman</option>
+                                <option value="ALL_ACTIVE">🌾 Semua Tanaman Saya</option>
                             </select>
                         </div>
                         <div>
                             <select id="filterRecStage" onchange="renderRecommendations()" class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
                                 <option value="ALL">Semua Fase HST</option>
+                                <option value="CURRENT_STAGE">✨ Fase Tumbuh Saat Ini</option>
                                 <option value="VEG_EARLY">Fase Awal / Semaian (HST 1-15)</option>
                                 <option value="VEG">Fase Vegetatif Aktif (HST 16-35)</option>
                                 <option value="GEN">Fase Bunga & Buah (HST 36-60)</option>
@@ -324,6 +325,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Active Crop Info Banner -->
+                <div id="activeCropBanner" class="hidden"></div>
 
                 <div id="recommendationsList" class="space-y-5"></div>
             </section>
@@ -1107,7 +1111,7 @@
                         </div>
 
                         <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                            <button onclick="viewRecommendationsForCrop('${crop.cropType}', '${phase.key}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 cursor-pointer">
+                            <button onclick="viewRecommendationsForCrop('${crop.id}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 cursor-pointer">
                                 <i class="fa-solid fa-flask-vial"></i> Dosis Nutrisi
                             </button>
                             <div class="flex gap-2">
@@ -1154,6 +1158,7 @@
             resetForm();
             renderDashboard();
             populateJournalCropSelect();
+            populateRecCropSelect();
             switchTab('dashboard');
         }
 
@@ -1177,6 +1182,7 @@
                 saveToLocalStorage();
                 renderDashboard();
                 populateJournalCropSelect();
+                populateRecCropSelect();
                 showToast("Data lahan telah dihapus", "warning");
             });
         }
@@ -1188,49 +1194,229 @@
             calculateLivePreview();
         }
 
-        function renderRecommendations() {
-            const selectedCrop = document.getElementById('filterRecCrop')?.value || '';
-            const selectedStage = document.getElementById('filterRecStage').value;
-            const searchQuery = (document.getElementById('searchRecQuery')?.value || '').toLowerCase().trim();
-            const container = document.getElementById('recommendationsList');
-            container.innerHTML = '';
+        function populateRecCropSelect() {
+            const select = document.getElementById('filterRecCrop');
+            if (!select) return;
 
-            let filtered = RECOMMENDATIONS_DB;
-            if (selectedCrop !== '') {
-                filtered = filtered.filter(r => r.crop === selectedCrop);
+            const currentVal = select.value;
+            select.innerHTML = '';
+
+            const optAllActive = document.createElement('option');
+            optAllActive.value = 'ALL_ACTIVE';
+            optAllActive.innerText = 'Semua Tanaman Saya';
+            select.appendChild(optAllActive);
+
+            if (cropsData.length > 0) {
+                const activeGroup = document.createElement('optgroup');
+                activeGroup.label = "Kebun & Lahan Aktif Saya";
+                cropsData.forEach(c => {
+                    const hst = calculateHST(c.plantingDate);
+                    const opt = document.createElement('option');
+                    opt.value = `CROP_${c.id}`;
+                    opt.innerText = `${c.plotName} - ${c.cropType} (${hst < 0 ? 'H-' + Math.abs(hst) : hst + ' HST'})`;
+                    activeGroup.appendChild(opt);
+                });
+                select.appendChild(activeGroup);
             }
-            if (selectedStage !== 'ALL') {
-                filtered = filtered.filter(r => r.stageKey === selectedStage);
+
+            if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
+                select.value = currentVal;
+            } else {
+                select.value = cropsData.length > 0 ? `CROP_${cropsData[0].id}` : 'ALL_ACTIVE';
+            }
+        }
+
+        function getStageGuideForCustomCrop(cropName, stageKey) {
+            const stageNames = {
+                'VEG_EARLY': 'Fase Awal / Semaian (HST 1 - 15)',
+                'VEG': 'Fase Vegetatif Aktif (HST 16 - 35)',
+                'GEN': 'Fase Bunga & Buah (HST 36 - 60)',
+                'MATURE': 'Fase Pengisian & Siap Panen (HST > 60)'
+            };
+
+            const stageGuides = {
+                'VEG_EARLY': {
+                    pupuk: `Kocor NPK Nitrogen Tinggi (2-3 gr/L) + Asam Humat untuk merangsang perakaran awal tanaman ${cropName}.`,
+                    pestisida: 'Fungisida kontak (Mancozeb/Propineb) + Insektisida Abamektin pencegahan hama thrips/kutu daun.',
+                    kalsium: 'Kalsium Nitrat / CNG (1 gr/L) untuk memperkuat dinding sel tunas muda.',
+                    perekat: 'Perekat Perata (0.5 ml/L).',
+                    tips: 'Jaga kelembapan tanah, pastikan drainase lancar agar bibit muda tidak mudah busuk akar.'
+                },
+                'VEG': {
+                    pupuk: `Kocor NPK 16-16-16 (5 gr/L). Semprot pupuk daun Gandasil D / Ultradap (2 gr/L) untuk pembentukan tajuk ${cropName}.`,
+                    pestisida: 'Insektisida Klorfenapir / Imidakloprid & Fungisida Difenokonazol / Karbendazim pencegahan bercak daun.',
+                    kalsium: 'Kalsium Boron (2 gr/L) semprot rutin agar batang kaku, kokoh, dan tahan serangan penyakit.',
+                    perekat: 'Perekat & Penembus dosis 0.5 - 1 ml/L.',
+                    tips: 'Lakukan penyiangan gulma serta perempelan tunas air/cacing yang tidak produktif.'
+                },
+                'GEN': {
+                    pupuk: `Pupuk tinggi Phospat & Kalium: MKP (3 gr/L) + KNO3 Putih (2 gr/L) / Gandasil B untuk mendorok pembuahan ${cropName}.`,
+                    pestisida: 'Rotasi Fungisida Azoksistrobin + Difenokonazol & Insektisida Spinotoram / Fipronil pencegahan ulat/patek.',
+                    kalsium: 'Kalsium Boron (2-3 gr/L) wajib untuk mencegah bunga rontok & busuk ujung buah.',
+                    perekat: 'Perekat & Penembus dosis 1 ml/L.',
+                    tips: 'Jaga pasokan air stabil saat fase pembentukan bunga dan pembesaran buah.'
+                },
+                'MATURE': {
+                    pupuk: 'Kalium murni (KCL / KNO3) atau hentikan pemupukan Nitrogen menjelang panen.',
+                    pestisida: 'Hentikan penyemprotan pestisida kimia 7-10 hari sebelum panen (Interval PHI).',
+                    kalsium: 'Kalsium Boron (2 gr/L) untuk mempertebal kulit dan meningkatkan daya tahan simpan hasil panen.',
+                    perekat: 'Perekat perata 0.5 ml/L.',
+                    tips: 'Lakukan pemanenan pada waktu pagi hari saat kondisi tanaman dalam keadaan segar.'
+                }
+            };
+
+            const guide = stageGuides[stageKey] || stageGuides['VEG'];
+            return {
+                crop: cropName,
+                stageKey: stageKey,
+                stageName: stageNames[stageKey] || stageNames['VEG'],
+                ...guide
+            };
+        }
+
+        function findRecsForCrop(cropName, stageFilter) {
+            if (!cropName) return [];
+            const searchName = cropName.toLowerCase().trim();
+
+            let matched = RECOMMENDATIONS_DB.filter(r => {
+                const rCrop = r.crop.toLowerCase();
+                return rCrop === searchName || searchName.includes(rCrop) || rCrop.includes(searchName);
+            });
+
+            if (matched.length === 0) {
+                const stages = ['VEG_EARLY', 'VEG', 'GEN', 'MATURE'];
+                matched = stages.map(sKey => getStageGuideForCustomCrop(cropName, sKey));
+            }
+
+            if (stageFilter && stageFilter !== 'ALL' && stageFilter !== 'CURRENT_STAGE') {
+                matched = matched.filter(r => r.stageKey === stageFilter);
+            }
+
+            return matched;
+        }
+
+        function renderRecommendations() {
+            const selectedVal = document.getElementById('filterRecCrop')?.value || 'ALL_ACTIVE';
+            let selectedStage = document.getElementById('filterRecStage').value;
+            const searchQuery = (document.getElementById('searchRecQuery')?.value || '').toLowerCase().trim();
+            
+            const container = document.getElementById('recommendationsList');
+            const bannerContainer = document.getElementById('activeCropBanner');
+            
+            container.innerHTML = '';
+            bannerContainer.innerHTML = '';
+            bannerContainer.classList.add('hidden');
+
+            let listToRender = [];
+
+            if (selectedVal.startsWith('CROP_')) {
+                const cropId = selectedVal.replace('CROP_', '');
+                const activeCrop = cropsData.find(c => c.id === cropId);
+
+                if (activeCrop) {
+                    const hst = calculateHST(activeCrop.plantingDate);
+                    const phase = getGrowthPhase(hst, activeCrop.totalHarvestDays);
+
+                    bannerContainer.innerHTML = `
+                        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2.5 py-0.5 bg-white/20 text-white text-xs font-extrabold rounded-full backdrop-blur-sm border border-white/20">
+                                        📍 Lahan Aktif: ${activeCrop.plotName}
+                                    </span>
+                                    <span class="px-2.5 py-0.5 bg-amber-400 text-amber-950 text-xs font-black rounded-full">
+                                        ${hst < 0 ? 'H-' + Math.abs(hst) : hst + ' HST'}
+                                    </span>
+                                </div>
+                                <h3 class="font-bold text-base text-white">Tanaman: ${activeCrop.cropType} (${phase.name})</h3>
+                                <p class="text-xs text-emerald-100">Menampilkan rekomendasi perawatan presisi sesuai umur tanaman Anda saat ini.</p>
+                            </div>
+                            <button onclick="switchTab('journal')" class="px-3.5 py-2 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-pen-to-square"></i> Catat Jurnal
+                            </button>
+                        </div>
+                    `;
+                    bannerContainer.classList.remove('hidden');
+
+                    let effectiveStage = selectedStage;
+                    if (selectedStage === 'CURRENT_STAGE') {
+                        effectiveStage = phase.key;
+                    }
+
+                    listToRender = findRecsForCrop(activeCrop.cropType, effectiveStage);
+                }
+            } else {
+                if (cropsData.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white p-8 rounded-2xl text-center border border-slate-200 space-y-3">
+                            <i class="fa-solid fa-wheat-awn-circle-exclamation text-4xl text-emerald-300"></i>
+                            <h3 class="font-bold text-slate-700">Belum Ada Tanaman Aktif Terdaftar</h3>
+                            <p class="text-slate-500 text-xs max-w-md mx-auto">Daftarkan lahan/tanaman Anda di tab Penghitung HST untuk mendapatkan panduan dosis yang otomatis disesuaikan dengan tanaman Anda.</p>
+                            <button onclick="switchTab('calculator')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition inline-flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-plus"></i> Daftarkan Tanaman Sekarang
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                bannerContainer.innerHTML = `
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-900 flex items-center gap-3">
+                        <i class="fa-solid fa-seedling text-emerald-600 text-xl shrink-0"></i>
+                        <div>
+                            <span class="font-bold text-emerald-950">Menampilkan Rekomendasi Semua Tanaman Saya (${cropsData.length} Lahan)</span>
+                            <p class="text-emerald-700 mt-0.5">Sistem secara otomatis menyesuaikan panduan berdasarkan usia HST masing-masing tanaman Anda.</p>
+                        </div>
+                    </div>
+                `;
+                bannerContainer.classList.remove('hidden');
+
+                cropsData.forEach(c => {
+                    const hst = calculateHST(c.plantingDate);
+                    const phase = getGrowthPhase(hst, c.totalHarvestDays);
+                    let effectiveStage = selectedStage === 'CURRENT_STAGE' ? phase.key : selectedStage;
+                    
+                    const recs = findRecsForCrop(c.cropType, effectiveStage);
+                    recs.forEach(r => {
+                        listToRender.push({
+                            ...r,
+                            customPlotName: `${c.plotName} (${c.cropType} - ${hst < 0 ? 'H-' + Math.abs(hst) : hst + ' HST'})`
+                        });
+                    });
+                });
             }
 
             if (searchQuery !== '') {
-                filtered = filtered.filter(r => 
+                listToRender = listToRender.filter(r => 
                     r.pupuk.toLowerCase().includes(searchQuery) ||
                     r.pestisida.toLowerCase().includes(searchQuery) ||
                     r.kalsium.toLowerCase().includes(searchQuery) ||
                     r.tips.toLowerCase().includes(searchQuery) ||
-                    r.stageName.toLowerCase().includes(searchQuery)
+                    r.stageName.toLowerCase().includes(searchQuery) ||
+                    r.crop.toLowerCase().includes(searchQuery)
                 );
             }
 
-            if (filtered.length === 0) {
+            if (listToRender.length === 0) {
                 container.innerHTML = `
                     <div class="bg-white p-8 rounded-2xl text-center border border-slate-200">
                         <i class="fa-solid fa-leaf text-3xl text-slate-300 mb-2"></i>
-                        <p class="text-slate-500 text-sm">Belum ada panduan khusus untuk kombinasi pencarian ini.</p>
+                        <p class="text-slate-500 text-sm">Belum ada panduan khusus untuk kombinasi kriteria ini.</p>
                     </div>
                 `;
                 return;
             }
 
-            filtered.forEach(rec => {
+            listToRender.forEach(rec => {
                 const card = `
-                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 hover:border-emerald-200 transition">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
                             <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
                                 ${rec.stageName}
                             </span>
-                            <span class="text-xs text-slate-400 font-medium">${rec.crop}</span>
+                            <span class="text-xs text-slate-600 font-bold bg-slate-100 px-2.5 py-1 rounded-lg">
+                                ${rec.customPlotName ? rec.customPlotName : 'Tanaman: ' + rec.crop}
+                            </span>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1275,16 +1461,16 @@
             });
         }
 
-        function viewRecommendationsForCrop(cropType, stageKey) {
+        function viewRecommendationsForCrop(cropId) {
+            populateRecCropSelect();
             const selectCrop = document.getElementById('filterRecCrop');
-            if (selectCrop && Array.from(selectCrop.options).some(o => o.value === cropType)) {
-                selectCrop.value = cropType;
-            } else if (selectCrop) {
-                selectCrop.value = "";
+            if (selectCrop) {
+                selectCrop.value = `CROP_${cropId}`;
             }
             
-            document.getElementById('filterRecStage').value = stageKey || 'ALL';
+            document.getElementById('filterRecStage').value = 'CURRENT_STAGE';
             if (document.getElementById('searchRecQuery')) document.getElementById('searchRecQuery').value = '';
+            
             renderRecommendations();
             switchTab('recommendations');
         }
@@ -1503,6 +1689,7 @@
                         saveToLocalStorage();
                         renderDashboard();
                         populateJournalCropSelect();
+                        populateRecCropSelect();
                         renderJournal();
                         showToast("Data berhasil dipulihkan!");
                     } else {
@@ -1511,6 +1698,7 @@
                 } catch (err) {
                     showToast("Gagal membaca file json", "warning");
                 }
+                e.target.value = '';
             };
             reader.readAsText(file);
         }
@@ -1572,7 +1760,22 @@
             document.getElementById('inputPlantingDate').value = todayISO;
             document.getElementById('journalDate').value = todayISO;
 
+            if (cropsData.length === 0) {
+                const samplePlantDate = new Date();
+                samplePlantDate.setDate(samplePlantDate.getDate() - 25);
+                cropsData = [{
+                    id: 'crop_sample_1',
+                    plotName: 'Lahan Utama Bawang Daun',
+                    cropType: 'Bawang Daun',
+                    plantingDate: samplePlantDate.toISOString().split('T')[0],
+                    totalHarvestDays: 70,
+                    areaNotes: '1.000 Rumpun'
+                }];
+                saveToLocalStorage();
+            }
+
             renderDashboard();
+            populateRecCropSelect();
             renderRecommendations();
             populateJournalCropSelect();
             renderJournal();
