@@ -40,9 +40,9 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
 
-                        <!-- App Branding -->
-                        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-md flex items-center justify-center">
-                            <i class="fa-solid font-bold text-xl sm:text-2xl fa-seedling text-emerald-200"></i>
+                        <!-- App Branding Icon -->
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center border border-white/20 shadow-sm bg-white/10 backdrop-blur-md shrink-0">
+                            <img src="icon-192.png" alt="Logo Taniku cpp28" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\'fa-solid fa-seedling text-emerald-200 text-xl\'></i>';">
                         </div>
                         <div>
                             <h1 class="font-bold text-base sm:text-lg leading-tight">Taniku cpp28</h1>
@@ -198,27 +198,13 @@
                             <input type="hidden" id="editCropId">
                             
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Lahan / Blok</label>
-                                <input type="text" id="inputPlotName" placeholder="Contoh: Lahan A, Kebun Timur, Blok 1" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Lokasi</label>
+                                <input type="text" id="inputPlotName" placeholder="Contoh: Kebun Timur, Blok A, Sawah Selatan" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jenis Tanaman</label>
-                                <select id="inputCropType" onchange="handleCropTypeChange()" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition cursor-pointer">
-                                    <option value="">Pilih Jenis</option>
-                                    <option value="Bawang Daun">Bawang Daun</option>
-                                    <option value="Kol">Kol / Kubis</option>
-                                    <option value="Cabai">Cabai</option>
-                                    <option value="Brokoli">Brokoli</option>
-                                    <option value="Kentang">Kentang</option>
-                                    <option value="Seledri">Seledri</option>
-                                    <option value="CUSTOM">Lainnya</option>
-                                </select>
-                            </div>
-
-                            <div id="customCropContainer" class="hidden">
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nama Tanaman (Input Manual)</label>
-                                <input type="text" id="inputCustomCropType" oninput="calculateLivePreview()" placeholder="Contoh: Terong, Porang, Buncis, Mentimun" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
+                                <input type="text" id="inputCropType" oninput="calculateLivePreview()" placeholder="Contoh: Bawang Daun, Cabai, Terong, Tomat" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none transition">
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -324,12 +310,7 @@
 
                         <div>
                             <select id="filterRecCrop" onchange="renderRecommendations()" class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-300 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                                <option value="Bawang Daun">Tanaman: Bawang Daun</option>
-                                <option value="Kol">Tanaman: Kol / Kubis</option>
-                                <option value="Cabai">Tanaman: Cabai</option>
-                                <option value="Brokoli">Tanaman: Brokoli</option>
-                                <option value="Kentang">Tanaman: Kentang</option>
-                                <option value="Seledri">Tanaman: Seledri</option>
+                                <option value="">Semua Tanaman</option>
                             </select>
                         </div>
                         <div>
@@ -523,14 +504,7 @@
             }
         }
 
-        const CROP_PRESETS = {
-            'Bawang Daun': { totalDays: 70, defaultArea: '1.000 Rumpun' },
-            'Kol': { totalDays: 80, defaultArea: '1.000 Pohon' },
-            'Cabai': { totalDays: 120, defaultArea: '1.000 Pohon' },
-            'Brokoli': { totalDays: 75, defaultArea: '1.000 Pohon' },
-            'Kentang': { totalDays: 100, defaultArea: '1.000 m²' },
-            'Seledri': { totalDays: 100, defaultArea: '1.000 Rumpun' }
-        };
+        const CROP_PRESETS = {};
 
         const RECOMMENDATIONS_DB = [
             {
@@ -1034,30 +1008,8 @@
         }
 
         function getSelectedCropType() {
-            const selectVal = document.getElementById('inputCropType').value;
-            if (selectVal === 'CUSTOM') {
-                return document.getElementById('inputCustomCropType').value.trim() || "Tanaman Lain";
-            }
-            return selectVal;
-        }
-
-        function handleCropTypeChange() {
-            const selectVal = document.getElementById('inputCropType').value;
-            const customContainer = document.getElementById('customCropContainer');
-            const customInput = document.getElementById('inputCustomCropType');
-
-            if (selectVal === 'CUSTOM') {
-                customContainer.classList.remove('hidden');
-                customInput.required = true;
-            } else {
-                customContainer.classList.add('hidden');
-                customInput.required = false;
-                customInput.value = '';
-                if (CROP_PRESETS[selectVal] && !document.getElementById('inputAreaNotes').value) {
-                    document.getElementById('inputAreaNotes').value = CROP_PRESETS[selectVal].defaultArea;
-                }
-            }
-            calculateLivePreview();
+            const inputElem = document.getElementById('inputCropType');
+            return inputElem ? inputElem.value.trim() : '';
         }
 
         function calculateLivePreview() {
@@ -1211,23 +1163,7 @@
 
             document.getElementById('editCropId').value = crop.id;
             document.getElementById('inputPlotName').value = crop.plotName;
-
-            const selectElem = document.getElementById('inputCropType');
-            const customContainer = document.getElementById('customCropContainer');
-            const customInput = document.getElementById('inputCustomCropType');
-
-            if (CROP_PRESETS[crop.cropType] || Array.from(selectElem.options).some(o => o.value === crop.cropType)) {
-                selectElem.value = crop.cropType;
-                customContainer.classList.add('hidden');
-                customInput.required = false;
-                customInput.value = '';
-            } else {
-                selectElem.value = 'CUSTOM';
-                customContainer.classList.remove('hidden');
-                customInput.required = true;
-                customInput.value = crop.cropType;
-            }
-
+            document.getElementById('inputCropType').value = crop.cropType;
             document.getElementById('inputPlantingDate').value = crop.plantingDate;
             document.getElementById('inputAreaNotes').value = crop.areaNotes || '';
 
@@ -1248,20 +1184,21 @@
         function resetForm() {
             document.getElementById('cropForm').reset();
             document.getElementById('editCropId').value = '';
-            document.getElementById('customCropContainer').classList.add('hidden');
-            document.getElementById('inputCustomCropType').required = false;
             document.getElementById('inputPlantingDate').value = new Date().toISOString().split('T')[0];
             calculateLivePreview();
         }
 
         function renderRecommendations() {
-            const selectedCrop = document.getElementById('filterRecCrop').value;
+            const selectedCrop = document.getElementById('filterRecCrop')?.value || '';
             const selectedStage = document.getElementById('filterRecStage').value;
             const searchQuery = (document.getElementById('searchRecQuery')?.value || '').toLowerCase().trim();
             const container = document.getElementById('recommendationsList');
             container.innerHTML = '';
 
-            let filtered = RECOMMENDATIONS_DB.filter(r => r.crop === selectedCrop);
+            let filtered = RECOMMENDATIONS_DB;
+            if (selectedCrop !== '') {
+                filtered = filtered.filter(r => r.crop === selectedCrop);
+            }
             if (selectedStage !== 'ALL') {
                 filtered = filtered.filter(r => r.stageKey === selectedStage);
             }
@@ -1340,10 +1277,10 @@
 
         function viewRecommendationsForCrop(cropType, stageKey) {
             const selectCrop = document.getElementById('filterRecCrop');
-            if (Array.from(selectCrop.options).some(o => o.value === cropType)) {
+            if (selectCrop && Array.from(selectCrop.options).some(o => o.value === cropType)) {
                 selectCrop.value = cropType;
-            } else {
-                selectCrop.value = "Bawang Daun";
+            } else if (selectCrop) {
+                selectCrop.value = "";
             }
             
             document.getElementById('filterRecStage').value = stageKey || 'ALL';
@@ -1634,20 +1571,6 @@
             document.getElementById('currentDateBadge').innerText = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
             document.getElementById('inputPlantingDate').value = todayISO;
             document.getElementById('journalDate').value = todayISO;
-
-            if (cropsData.length === 0) {
-                const samplePlantDate = new Date();
-                samplePlantDate.setDate(samplePlantDate.getDate() - 25);
-                cropsData = [{
-                    id: 'crop_sample_1',
-                    plotName: 'Lahan Utama Bawang Daun',
-                    cropType: 'Bawang Daun',
-                    plantingDate: samplePlantDate.toISOString().split('T')[0],
-                    totalHarvestDays: 70,
-                    areaNotes: '1.000 Rumpun'
-                }];
-                saveToLocalStorage();
-            }
 
             renderDashboard();
             renderRecommendations();
